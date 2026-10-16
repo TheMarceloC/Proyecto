@@ -103,6 +103,19 @@ solo debe usarse para información pública.
 
 ## Verificación local de esta adaptación (16 de octubre de 2026)
 
+### Actualización de seguridad de TanStack Start
+
+Se actualizó `@tanstack/react-start` a `1.168.60`, con `@tanstack/start-server-core`
+resuelto en `1.169.39` dentro de `bun.lock`, para corregir CVE-2026-102989.
+Router y su plugin se alinearon con las dependencias de esa versión.
+Referencia: [aviso oficial de TanStack](https://tanstack.com/blog/tanstack-start-security-update-cve-2026-102989).
+
+Si Vercel bloqueó una versión anterior, despliega el commit que incluye esta
+actualización. Volver a desplegar el commit antiguo conserva la dependencia
+vulnerable. No es necesario activar la variable que omite el bloqueo de seguridad.
+
+### Comprobaciones
+
 - Instalación con `bun install --frozen-lockfile` y compilación con `bun run build`: correctas.
 - `tsc --noEmit`: correcto. Formato y lint de los archivos de configuración modificados: correctos.
 - Vista previa de Nitro sobre `.vercel/output`: las 12 rutas existentes respondieron HTTP 200;

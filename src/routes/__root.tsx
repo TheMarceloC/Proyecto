@@ -6,6 +6,7 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
@@ -15,7 +16,6 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { FloatingQuote } from "@/components/site/FloatingQuote";
 import { Toaster } from "sonner";
-
 
 function NotFoundComponent() {
   return (
@@ -39,7 +39,7 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
@@ -137,7 +137,6 @@ function RootComponent() {
       </div>
       <FloatingQuote />
       <Toaster theme="dark" position="top-center" />
-
     </QueryClientProvider>
   );
 }
