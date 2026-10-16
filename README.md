@@ -101,8 +101,6 @@ Si se agregan servicios reales, sus claves privadas van en **Settings →
 Environment Variables** de Vercel. El prefijo `VITE_` expone valores al navegador;
 solo debe usarse para información pública.
 
-## Referencias oficiales
-
 ## Verificación local de esta adaptación (16 de octubre de 2026)
 
 - Instalación con `bun install --frozen-lockfile` y compilación con `bun run build`: correctas.
