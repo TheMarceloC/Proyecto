@@ -1,5 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PageHeader, ServicesSection, CtaSection, AudienceSection } from "@/components/site/sections";
+import {
+  PageHeader,
+  ServicesSection,
+  CtaSection,
+  AudienceSection,
+} from "@/components/site/sections";
 
 export const Route = createFileRoute("/servicios")({
   head: () => ({
@@ -26,7 +31,7 @@ function ServiciosPage() {
       <PageHeader
         eyebrow="Servicios"
         title="Todo el proceso de fabricación en un solo lugar"
-        text="Iniciamos con impresión 3D FDM y ampliamos hacia más tecnologías de manufactura digital."
+        text="Diseño, modelado e impresión 3D FDM para convertir tus proyectos en piezas."
         cta={{ to: "/cotizar", label: "Cotizar ahora" }}
       />
       <ServicesSection />

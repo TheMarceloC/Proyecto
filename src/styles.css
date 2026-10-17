@@ -48,6 +48,7 @@
 }
 
 :root {
+  color-scheme: dark;
   --radius: 0.875rem;
 
   --ink: oklch(0.16 0.035 264);
@@ -90,8 +91,16 @@
     color: var(--color-foreground);
     background-color: oklch(0.13 0.03 264);
     background-image:
-      radial-gradient(1200px 600px at 85% -10%, color-mix(in oklab, var(--brand) 20%, transparent), transparent 60%),
-      radial-gradient(900px 500px at -10% 40%, color-mix(in oklab, var(--accent) 12%, transparent), transparent 60%);
+      radial-gradient(
+        1200px 600px at 85% -10%,
+        color-mix(in oklab, var(--brand) 20%, transparent),
+        transparent 60%
+      ),
+      radial-gradient(
+        900px 500px at -10% 40%,
+        color-mix(in oklab, var(--accent) 12%, transparent),
+        transparent 60%
+      );
     background-attachment: fixed;
     font-family: var(--font-sans);
   }

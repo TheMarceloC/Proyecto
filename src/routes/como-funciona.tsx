@@ -1,62 +1,55 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { AdviceSection, CtaSection, PageHeader, ProcessSection } from "@/components/site/sections";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ProcessSection, PageHeader, CtaSection } from "@/components/site/sections";
 import { GlassCard } from "@/components/site/ui";
-
+import { Eye, Upload, Download } from "lucide-react";
 export const Route = createFileRoute("/como-funciona")({
-  head: () => ({
-    meta: [
-      { title: "Cómo funciona — ProtoLab" },
-      {
-        name: "description",
-        content:
-          "Sube tu diseño, recibe cotización y asesoría, aprueba, fabricamos y das seguimiento hasta recibir tu pieza.",
-      },
-      { property: "og:title", content: "Cómo funciona — ProtoLab" },
-      {
-        property: "og:description",
-        content: "El proceso completo: de subir tu diseño a recibir tu pieza terminada.",
-      },
-    ],
-  }),
-  component: ComoFuncionaPage,
+  head: () => ({ meta: [{ title: "Comparte, descubre y fabrica — ProtoLab" }] }),
+  component: How,
 });
-
-const flow = [
-  "Subir diseño",
-  "Recibir cotización",
-  "Recibir asesoría",
-  "Aprobar",
-  "Fabricar",
-  "Dar seguimiento",
-  "Recibir pieza",
-];
-
-function ComoFuncionaPage() {
+function How() {
   return (
     <>
       <PageHeader
-        eyebrow="Proceso"
-        title="Convierte tu diseño en una pieza real"
-        text="Un flujo claro, sin llamadas ni cotizaciones interminables."
-        cta={{ to: "/cotizar", label: "Subir mi diseño" }}
+        eyebrow="Dos caminos. Muchas ideas."
+        title="Fabrica con nosotros. Crea con todos."
+        text="Pide una pieza sin tener impresora, o contribuye con un diseño para fabricar en la tuya."
       />
-      <ProcessSection eyebrow="Los 5 pasos" />
-      <section className="mx-auto max-w-7xl px-6 py-8">
-        <GlassCard className="p-6">
-          <p className="label-caps">Flujo completo</p>
-          <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-3 text-sm">
-            {flow.map((f, i) => (
-              <span key={f} className="flex items-center gap-2">
-                <span className="rounded-lg border border-border bg-white/5 px-3 py-1.5 text-foreground">
-                  {f}
-                </span>
-                {i < flow.length - 1 ? <span className="text-accent">→</span> : null}
-              </span>
-            ))}
-          </div>
-        </GlassCard>
+      <section className="mx-auto max-w-7xl px-6 py-12">
+        <div className="grid gap-5 md:grid-cols-3">
+          {[
+            {
+              Icon: Eye,
+              title: "Explora sin barreras",
+              text: "Los diseños publicados, las imágenes y sus descripciones son visibles para cualquiera. No necesitas una cuenta para descubrir.",
+            },
+            {
+              Icon: Upload,
+              title: "Comparte una creación",
+              text: "Crea tu cuenta, sube un archivo original y elige una licencia que permita compartir y fabricar. El equipo revisa tu publicación.",
+            },
+            {
+              Icon: Download,
+              title: "Desbloquea las descargas",
+              text: "Mientras tengas al menos un diseño aprobado, podrás descargar toda la colección. No se consumen créditos por cada archivo.",
+            },
+          ].map((s) => (
+            <GlassCard key={s.title} className="p-7">
+              <s.Icon className="size-7 text-accent" />
+              <h2 className="mt-5 text-xl font-bold">{s.title}</h2>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{s.text}</p>
+            </GlassCard>
+          ))}
+        </div>
+        <div className="mt-8 flex flex-wrap gap-5">
+          <Link to="/publicar" className="font-semibold text-accent">
+            Publicar mi diseño →
+          </Link>
+          <Link to="/disenos" className="font-semibold text-accent">
+            Explorar la colección →
+          </Link>
+        </div>
       </section>
-      <AdviceSection />
+      <ProcessSection />
       <CtaSection />
     </>
   );

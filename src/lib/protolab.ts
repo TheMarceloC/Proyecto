@@ -1,10 +1,8 @@
-// Central configuration + demo data for the ProtoLab MVP.
+// Configuración de servicios y recorrido de fabricación.
 // Change BRAND to rename the project everywhere.
 export const BRAND = {
   name: "ProtoLab",
   tagline: "Fabricación digital y prototipado bajo demanda.",
-  email: "hola@protolab.hn",
-  whatsapp: "+504 9111 0000",
   country: "Honduras",
   codePrefix: "PL",
 };
@@ -12,14 +10,14 @@ export const BRAND = {
 export const NAV_LINKS = [
   { to: "/", label: "Inicio" },
   { to: "/servicios", label: "Servicios" },
-  { to: "/ejemplos", label: "Ejemplos" },
+  { to: "/disenos", label: "Diseños" },
   { to: "/como-funciona", label: "Cómo funciona" },
   { to: "/seguimiento", label: "Seguimiento" },
 ] as const;
 
 export const FOOTER_LINKS = [
   { to: "/servicios", label: "Servicios" },
-  { to: "/ejemplos", label: "Ejemplos" },
+  { to: "/disenos", label: "Diseños" },
   { to: "/materiales", label: "Materiales" },
   { to: "/asesoria", label: "Asesoría" },
   { to: "/cotizar", label: "Cotizar" },
@@ -69,30 +67,37 @@ export const MARKETPLACE_CATEGORIES = [
   { title: "Modelado 3D", text: "De la idea al archivo fabricable.", soon: false },
   { title: "Prototipado", text: "Versiones físicas para validar.", soon: false },
   { title: "Piezas personalizadas", text: "Fabricación bajo pedido.", soon: false },
-  { title: "CNC", text: "En evaluación.", soon: true },
-  { title: "Corte láser", text: "En evaluación.", soon: true },
-  { title: "Resina", text: "En evaluación.", soon: true },
-  { title: "PCB", text: "En evaluación.", soon: true },
 ];
 
 /** Recomendación simple de material según lo que la pieza debe hacer. */
 export function recommendMaterial(requirement: string): { code: string; why: string } {
   switch (requirement) {
     case "Debe soportar peso":
-      return { code: "PETG", why: "Buen equilibrio entre resistencia y tenacidad." };
+      return {
+        code: "PETG",
+        why: "Candidato para revisar según cargas, orientación y geometría de la pieza.",
+      };
     case "Debe resistir golpes":
-      return { code: "PETG", why: "Absorbe impacto mejor que el PLA." };
+      return {
+        code: "PETG",
+        why: "Candidato sujeto a revisión de la aplicación y del filamento disponible.",
+      };
     case "Debe resistir calor":
-      return { code: "ABS", why: "Mayor tolerancia térmica." };
+      return {
+        code: "ABS",
+        why: "Revisaremos la temperatura de servicio con la ficha del filamento.",
+      };
     case "Debe ser flexible":
-      return { code: "TPU", why: "Material flexible, absorbe deformación." };
+      return {
+        code: "TPU",
+        why: "Revisaremos flexibilidad y dureza según el filamento disponible.",
+      };
     case "Solo debe verse bien":
       return { code: "PLA", why: "Buen detalle y acabado para piezas visuales." };
     default:
-      return { code: "PETG", why: "Opción versátil mientras revisamos tu pieza." };
+      return { code: "PETG", why: "Selección inicial que confirmaremos al revisar tu proyecto." };
   }
 }
-
 
 export const PROCESS_STEPS = [
   {
@@ -143,11 +148,6 @@ export const SERVICES = [
     title: "Fabricación personalizada",
     text: "Producción bajo pedido para proyectos académicos, profesionales y emprendimientos.",
   },
-  {
-    title: "Próximamente",
-    text: "CNC, corte láser, resina, grabado y fabricación de PCB dentro de la misma plataforma.",
-    soon: true,
-  },
 ];
 
 export const AUDIENCES = [
@@ -174,30 +174,37 @@ export const MATERIALS = [
     code: "PLA",
     ideal: "Prototipos y piezas visuales.",
     spec: "Fácil de imprimir · buen detalle",
-    strength: 55,
   },
   {
     code: "PETG",
     ideal: "Piezas funcionales y resistentes.",
     spec: "Resistente · buena tenacidad",
-    strength: 80,
   },
   {
     code: "ABS",
     ideal: "Aplicaciones con mayores exigencias térmicas.",
-    spec: "Térmico hasta ~90 °C",
-    strength: 75,
+    spec: "Evaluar temperatura y entorno de uso",
   },
   {
     code: "TPU",
     ideal: "Piezas flexibles.",
     spec: "Flexible · absorbe impacto",
-    strength: 45,
   },
 ];
 
-
 export const FAQS = [
+  {
+    q: "¿Tengo que pagar para ver los diseños?",
+    a: "Puedes explorar el catálogo sin cuenta. Para descargar los archivos, publica una creación original y espera su aprobación.",
+  },
+  {
+    q: "¿Qué desbloquea mi primer diseño?",
+    a: "Mientras tengas al menos un diseño aprobado, puedes descargar toda la colección. No gastas créditos por descarga.",
+  },
+  {
+    q: "¿Pueden fabricar un diseño de la comunidad?",
+    a: "Sí. Abre el diseño y selecciona Fabricar con ProtoLab. Te enviaremos una cotización antes de iniciar la fabricación.",
+  },
   {
     q: "¿Qué archivos puedo enviar?",
     a: "Aceptamos .STL, .OBJ, .STEP y .STP. Si tienes otro formato, escríbenos y lo revisamos.",
@@ -208,7 +215,7 @@ export const FAQS = [
   },
   {
     q: "¿Cuánto tarda una impresión?",
-    a: "La mayoría de piezas pequeñas están listas en 2 a 3 días. Piezas grandes o pedidos múltiples pueden tomar más.",
+    a: "Confirmamos el plazo después de revisar el archivo, la cantidad y la disponibilidad de fabricación.",
   },
   {
     q: "¿Qué material debo elegir?",
@@ -216,7 +223,7 @@ export const FAQS = [
   },
   {
     q: "¿Cómo se calcula el precio?",
-    a: "Consideramos material, volumen de la pieza, tiempo de máquina, cantidad y prioridad. El precio mostrado en el cotizador es preliminar.",
+    a: "Consideramos material, volumen de la pieza, tiempo de máquina, cantidad y prioridad. El equipo revisa el archivo y te envía una cotización antes de fabricar.",
   },
   {
     q: "¿Puedo pedir una sola pieza?",
@@ -257,102 +264,3 @@ export type Order = {
   price: number;
   client?: string;
 };
-
-export const DEMO_ORDERS: Order[] = [
-  {
-    code: "PL-2026-00124",
-    project: "Carcasa para sensor",
-    material: "PETG",
-    technology: "Impresión 3D FDM",
-    quantity: 2,
-    priority: "Normal",
-    statusIndex: 4,
-    createdAt: "02/09/2026",
-    estimatedDelivery: "4 de septiembre",
-    price: 480,
-    client: "Carlos A.",
-  },
-  {
-    code: "PL-2026-00118",
-    project: "Soporte para motor",
-    material: "PLA",
-    technology: "Impresión 3D FDM",
-    quantity: 1,
-    priority: "Normal",
-    statusIndex: 6,
-    createdAt: "28/08/2026",
-    estimatedDelivery: "30 de agosto",
-    price: 260,
-    client: "María L.",
-  },
-  {
-    code: "PL-2026-00131",
-    project: "Engranaje de prueba",
-    material: "PETG",
-    technology: "Impresión 3D FDM",
-    quantity: 4,
-    priority: "Urgente",
-    statusIndex: 2,
-    createdAt: "01/09/2026",
-    estimatedDelivery: "5 de septiembre",
-    price: 640,
-    client: "Taller Mecatrónica UNAH",
-  },
-];
-
-const STORAGE_KEY = "protolab:orders";
-
-export function loadOrders(): Order[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as Order[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-export function saveOrder(order: Order) {
-  if (typeof window === "undefined") return;
-  const all = [order, ...loadOrders()];
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
-}
-
-export function allOrders(): Order[] {
-  return [...loadOrders(), ...DEMO_ORDERS];
-}
-
-export function findOrder(code: string): Order | undefined {
-  const needle = code.trim().toUpperCase();
-  return allOrders().find((o) => o.code.toUpperCase() === needle);
-}
-
-export function generateCode(): string {
-  const n = 124 + Math.floor(Math.random() * 800);
-  return `${BRAND.codePrefix}-2026-${String(n).padStart(5, "0")}`;
-}
-
-/** Preliminary price estimate — demo formula only. */
-export function estimatePrice(input: {
-  material: string;
-  quantity: number;
-  priority: string;
-  mechanical: string;
-}) {
-  const base: Record<string, number> = {
-    PLA: 180,
-    PETG: 240,
-    ABS: 260,
-    TPU: 310,
-    "No estoy seguro": 240,
-  };
-  const unit = base[input.material] ?? 240;
-  let total = unit * Math.max(1, input.quantity);
-  if (input.priority === "Urgente") total *= 1.35;
-  if (input.mechanical === "Sí") total *= 1.1;
-  return Math.round(total / 10) * 10;
-}
-
-export function estimatedDays(priority: string) {
-  return priority === "Urgente" ? "1–2 días" : "2–3 días";
-}

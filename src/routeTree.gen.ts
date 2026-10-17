@@ -15,12 +15,16 @@ import { Route as AsesoriaRouteImport } from './routes/asesoria'
 import { Route as ComoFuncionaRouteImport } from './routes/como-funciona'
 import { Route as ContactoRouteImport } from './routes/contacto'
 import { Route as CotizarRouteImport } from './routes/cotizar'
+import { Route as CuentaRouteImport } from './routes/cuenta'
+import { Route as DisenosRouteImport } from './routes/disenos'
 import { Route as EjemplosRouteImport } from './routes/ejemplos'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as MaterialesRouteImport } from './routes/materiales'
 import { Route as PanelRouteImport } from './routes/panel'
+import { Route as PublicarRouteImport } from './routes/publicar'
 import { Route as SeguimientoRouteImport } from './routes/seguimiento'
 import { Route as ServiciosRouteImport } from './routes/servicios'
+import { Route as DisenoIdRouteImport } from './routes/diseno.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -52,6 +56,16 @@ const CotizarRoute = CotizarRouteImport.update({
   path: '/cotizar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CuentaRoute = CuentaRouteImport.update({
+  id: '/cuenta',
+  path: '/cuenta',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DisenosRoute = DisenosRouteImport.update({
+  id: '/disenos',
+  path: '/disenos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EjemplosRoute = EjemplosRouteImport.update({
   id: '/ejemplos',
   path: '/ejemplos',
@@ -72,6 +86,11 @@ const PanelRoute = PanelRouteImport.update({
   path: '/panel',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PublicarRoute = PublicarRouteImport.update({
+  id: '/publicar',
+  path: '/publicar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SeguimientoRoute = SeguimientoRouteImport.update({
   id: '/seguimiento',
   path: '/seguimiento',
@@ -82,6 +101,11 @@ const ServiciosRoute = ServiciosRouteImport.update({
   path: '/servicios',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DisenoIdRoute = DisenoIdRouteImport.update({
+  id: '/diseno/$id',
+  path: '/diseno/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -90,12 +114,16 @@ export interface FileRoutesByFullPath {
   '/como-funciona': typeof ComoFuncionaRoute
   '/contacto': typeof ContactoRoute
   '/cotizar': typeof CotizarRoute
+  '/cuenta': typeof CuentaRoute
+  '/disenos': typeof DisenosRoute
   '/ejemplos': typeof EjemplosRoute
   '/faq': typeof FaqRoute
   '/materiales': typeof MaterialesRoute
   '/panel': typeof PanelRoute
+  '/publicar': typeof PublicarRoute
   '/seguimiento': typeof SeguimientoRoute
   '/servicios': typeof ServiciosRoute
+  '/diseno/$id': typeof DisenoIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -104,12 +132,16 @@ export interface FileRoutesByTo {
   '/como-funciona': typeof ComoFuncionaRoute
   '/contacto': typeof ContactoRoute
   '/cotizar': typeof CotizarRoute
+  '/cuenta': typeof CuentaRoute
+  '/disenos': typeof DisenosRoute
   '/ejemplos': typeof EjemplosRoute
   '/faq': typeof FaqRoute
   '/materiales': typeof MaterialesRoute
   '/panel': typeof PanelRoute
+  '/publicar': typeof PublicarRoute
   '/seguimiento': typeof SeguimientoRoute
   '/servicios': typeof ServiciosRoute
+  '/diseno/$id': typeof DisenoIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -119,12 +151,16 @@ export interface FileRoutesById {
   '/como-funciona': typeof ComoFuncionaRoute
   '/contacto': typeof ContactoRoute
   '/cotizar': typeof CotizarRoute
+  '/cuenta': typeof CuentaRoute
+  '/disenos': typeof DisenosRoute
   '/ejemplos': typeof EjemplosRoute
   '/faq': typeof FaqRoute
   '/materiales': typeof MaterialesRoute
   '/panel': typeof PanelRoute
+  '/publicar': typeof PublicarRoute
   '/seguimiento': typeof SeguimientoRoute
   '/servicios': typeof ServiciosRoute
+  '/diseno/$id': typeof DisenoIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -135,12 +171,16 @@ export interface FileRouteTypes {
     | '/como-funciona'
     | '/contacto'
     | '/cotizar'
+    | '/cuenta'
+    | '/disenos'
     | '/ejemplos'
     | '/faq'
     | '/materiales'
     | '/panel'
+    | '/publicar'
     | '/seguimiento'
     | '/servicios'
+    | '/diseno/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -149,12 +189,16 @@ export interface FileRouteTypes {
     | '/como-funciona'
     | '/contacto'
     | '/cotizar'
+    | '/cuenta'
+    | '/disenos'
     | '/ejemplos'
     | '/faq'
     | '/materiales'
     | '/panel'
+    | '/publicar'
     | '/seguimiento'
     | '/servicios'
+    | '/diseno/$id'
   id:
     | '__root__'
     | '/'
@@ -163,12 +207,16 @@ export interface FileRouteTypes {
     | '/como-funciona'
     | '/contacto'
     | '/cotizar'
+    | '/cuenta'
+    | '/disenos'
     | '/ejemplos'
     | '/faq'
     | '/materiales'
     | '/panel'
+    | '/publicar'
     | '/seguimiento'
     | '/servicios'
+    | '/diseno/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -178,12 +226,16 @@ export interface RootRouteChildren {
   ComoFuncionaRoute: typeof ComoFuncionaRoute
   ContactoRoute: typeof ContactoRoute
   CotizarRoute: typeof CotizarRoute
+  CuentaRoute: typeof CuentaRoute
+  DisenosRoute: typeof DisenosRoute
   EjemplosRoute: typeof EjemplosRoute
   FaqRoute: typeof FaqRoute
   MaterialesRoute: typeof MaterialesRoute
   PanelRoute: typeof PanelRoute
+  PublicarRoute: typeof PublicarRoute
   SeguimientoRoute: typeof SeguimientoRoute
   ServiciosRoute: typeof ServiciosRoute
+  DisenoIdRoute: typeof DisenoIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -230,6 +282,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CotizarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cuenta': {
+      id: '/cuenta'
+      path: '/cuenta'
+      fullPath: '/cuenta'
+      preLoaderRoute: typeof CuentaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/disenos': {
+      id: '/disenos'
+      path: '/disenos'
+      fullPath: '/disenos'
+      preLoaderRoute: typeof DisenosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ejemplos': {
       id: '/ejemplos'
       path: '/ejemplos'
@@ -258,6 +324,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PanelRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/publicar': {
+      id: '/publicar'
+      path: '/publicar'
+      fullPath: '/publicar'
+      preLoaderRoute: typeof PublicarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/seguimiento': {
       id: '/seguimiento'
       path: '/seguimiento'
@@ -272,6 +345,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServiciosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/diseno/$id': {
+      id: '/diseno/$id'
+      path: '/diseno/$id'
+      fullPath: '/diseno/$id'
+      preLoaderRoute: typeof DisenoIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -282,12 +362,16 @@ const rootRouteChildren: RootRouteChildren = {
   ComoFuncionaRoute: ComoFuncionaRoute,
   ContactoRoute: ContactoRoute,
   CotizarRoute: CotizarRoute,
+  CuentaRoute: CuentaRoute,
+  DisenosRoute: DisenosRoute,
   EjemplosRoute: EjemplosRoute,
   FaqRoute: FaqRoute,
   MaterialesRoute: MaterialesRoute,
   PanelRoute: PanelRoute,
+  PublicarRoute: PublicarRoute,
   SeguimientoRoute: SeguimientoRoute,
   ServiciosRoute: ServiciosRoute,
+  DisenoIdRoute: DisenoIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

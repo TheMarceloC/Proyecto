@@ -103,50 +103,60 @@ export function HomeStepsSection() {
   );
 }
 
-/** Home — sección 5: 4 ejemplos visuales. */
-const HOME_EXAMPLES = [
-  { img: carcasa, title: "Carcasa electrónica" },
-  { img: soporte, title: "Soporte para sensor" },
-  { img: engranaje, title: "Engranaje" },
-  { img: carcasa, title: "Prototipo de producto" },
+const HOME_COLLECTIONS = [
+  {
+    img: carcasa,
+    title: "Electrónica con forma",
+    text: "Carcasas y alojamientos para tus circuitos.",
+  },
+  {
+    img: soporte,
+    title: "Ideas que resuelven",
+    text: "Soportes y piezas para tu siguiente proyecto.",
+  },
+  { img: engranaje, title: "Diseña movimiento", text: "Mecanismos y componentes para explorar." },
 ];
-
 export function ExamplesPreviewSection() {
   return (
     <section className="mx-auto max-w-7xl px-6 py-14">
-      <SectionHeading
-        eyebrow="Ejemplos"
-        title="¿Qué puedes fabricar?"
-        text="Desde una sola pieza hasta un prototipo funcional."
-      />
-      <div className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {HOME_EXAMPLES.map((e) => (
-          <GlassCard key={e.title} className="overflow-hidden transition hover:-translate-y-0.5">
-            <img
-              src={e.img}
-              alt={e.title}
-              loading="lazy"
-              width={768}
-              height={576}
-              className="h-40 w-full object-cover"
-            />
-            <p className="p-4 text-sm font-semibold text-foreground">{e.title}</p>
-          </GlassCard>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <SectionHeading
+          eyebrow="Comunidad de creadores"
+          title="De una buena idea a tu próxima pieza."
+          text="Un espacio para encontrar inspiración, compartir diseños y fabricar juntos."
+        />
+        <ActionLink to="/disenos" variant="ghost">
+          Explorar la colección
+          <ArrowRight className="size-4" />
+        </ActionLink>
+      </div>
+      <div className="mt-8 grid gap-5 md:grid-cols-3">
+        {HOME_COLLECTIONS.map((item) => (
+          <Link key={item.title} to="/disenos">
+            <GlassCard className="group overflow-hidden transition hover:-translate-y-1 hover:border-accent/40">
+              <div className="overflow-hidden">
+                <img
+                  src={item.img}
+                  alt=""
+                  className="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-105"
+                  loading="lazy"
+                />
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-bold">{item.title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{item.text}</p>
+                <span className="mt-5 inline-flex gap-2 text-sm text-accent">
+                  Descubrir diseños
+                  <ArrowRight className="size-4" />
+                </span>
+              </div>
+            </GlassCard>
+          </Link>
         ))}
       </div>
-      <div className="mt-6 flex flex-wrap gap-3">
-        <ActionLink to="/ejemplos" variant="ghost">
-          Ver más ejemplos
-        </ActionLink>
-        <ActionLink to="/cotizar">Cotizar mi pieza</ActionLink>
-      </div>
-      <p className="mt-4 text-xs text-muted-foreground">
-        Ejemplos de aplicaciones. No representan clientes reales.
-      </p>
     </section>
   );
 }
-
 /** Home — sección 6: capacidades actuales y futuras. */
 export function MarketplaceSection() {
   return (
@@ -154,17 +164,13 @@ export function MarketplaceSection() {
       <SectionHeading
         eyebrow="Capacidades"
         title="Encuentra la forma correcta de fabricar tu proyecto"
-        text="Hoy fabricamos con impresión 3D y diseño 3D. Otras tecnologías están en evaluación."
+        text="Impresión 3D, modelado y acompañamiento para llevar tus ideas a una pieza."
       />
       <div className="mt-9 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {MARKETPLACE_CATEGORIES.map((c) => (
-          <GlassCard
-            key={c.title}
-            className={`p-5 ${c.soon ? "border-dashed opacity-70" : "hover:border-accent/30"} transition`}
-          >
+          <GlassCard key={c.title} className="p-5 transition hover:border-accent/30">
             <div className="flex items-center justify-between gap-2">
               <p className="text-sm font-semibold text-foreground">{c.title}</p>
-              {c.soon ? <span className="label-caps text-accent">Próximamente</span> : null}
             </div>
             <p className="mt-2 text-xs text-muted-foreground">{c.text}</p>
           </GlassCard>
@@ -206,7 +212,7 @@ export function ServicesSection() {
       <SectionHeading
         eyebrow="Servicios"
         title="Fabricamos lo que necesitas, cuando lo necesitas"
-        text="Impresión 3D hoy; más tecnologías de manufactura digital en camino."
+        text="Diseño, impresión 3D y fabricación bajo pedido, con revisión de tu proyecto."
       />
       <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {SERVICES.map((s, i) => {
@@ -214,13 +220,12 @@ export function ServicesSection() {
           return (
             <GlassCard
               key={s.title}
-              className={`p-6 transition hover:-translate-y-0.5 hover:border-accent/30 ${s.soon ? "border-dashed" : ""}`}
+              className="p-6 transition hover:-translate-y-0.5 hover:border-accent/30"
             >
               <div className="flex items-center justify-between">
                 <span className="grid size-10 place-items-center rounded-xl bg-brand/15 text-accent">
                   <Icon className="size-5" />
                 </span>
-                {s.soon ? <span className="label-caps text-accent">Próximamente</span> : null}
               </div>
               <h3 className="mt-4 text-lg font-semibold text-foreground">{s.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.text}</p>
@@ -267,7 +272,6 @@ export function MaterialsSection() {
             <p className="mt-3 text-xs text-muted-foreground">Ideal para:</p>
             <p className="mt-1 text-sm leading-relaxed text-foreground">{m.ideal}</p>
             <div className="mt-5">
-              <ProgressBar value={m.strength} />
               <p className="mt-2 text-[11px] text-muted-foreground">{m.spec}</p>
             </div>
           </GlassCard>

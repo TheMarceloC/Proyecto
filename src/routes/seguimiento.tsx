@@ -1,180 +1,150 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Search } from "lucide-react";
-import {
-  Button,
-  GlassCard,
-  ProgressBar,
-  SectionHeading,
-  inputClass,
-} from "@/components/site/ui";
-import { DEMO_ORDERS, ORDER_STATUSES, findOrder, type Order } from "@/lib/protolab";
-
-type SearchParams = { codigo?: string };
-
+import { MemberGate } from "@/components/community/Account";
+import { PageHeader } from "@/components/site/sections";
+import { Button, GlassCard, inputClass, ProgressBar } from "@/components/site/ui";
+import { api, type Quote } from "@/lib/community";
+import { ORDER_STATUSES } from "@/lib/protolab";
 export const Route = createFileRoute("/seguimiento")({
-  validateSearch: (search: Record<string, unknown>): SearchParams =>
-    typeof search["codigo"] === "string" ? { codigo: search["codigo"] } : {},
-
+  validateSearch: (s: Record<string, unknown>): { codigo?: string } =>
+    typeof s["codigo"] === "string" ? { codigo: s["codigo"].slice(0, 60) } : {},
   head: () => ({
-    meta: [
-      { title: "Seguimiento de pedido — ProtoLab" },
-      {
-        name: "description",
-        content:
-          "Consulta el estado de tu proyecto con tu código de pedido: revisión, cotización, fabricación y entrega.",
-      },
-      { property: "og:title", content: "Seguimiento de pedido — ProtoLab" },
-      {
-        property: "og:description",
-        content: "Ingresa tu código y revisa en qué etapa está tu pieza.",
-      },
-    ],
+    meta: [{ title: "Seguimiento de tu pieza — ProtoLab" }, { name: "robots", content: "noindex" }],
   }),
-  component: SeguimientoPage,
+  component: Tracking,
 });
-
-function SeguimientoPage() {
+function Tracking() {
+  return (
+    <>
+      <PageHeader
+        eyebrow="Cada paso cuenta"
+        title="Tu pieza, paso a paso."
+        text="Consulta las solicitudes vinculadas a tu cuenta con el código de tu proyecto."
+      />
+      <section className="mx-auto max-w-5xl px-6 py-10">
+        <MemberGate>
+          <TrackingContent />
+        </MemberGate>
+      </section>
+    </>
+  );
+}
+function TrackingContent() {
   const { codigo } = Route.useSearch();
   const navigate = useNavigate();
-  const [input, setInput] = useState(codigo ?? "");
-  const [order, setOrder] = useState<Order | undefined>(undefined);
-  const [notFound, setNotFound] = useState(false);
-
-  // Orders live in the browser for this demo, so resolve them after hydration.
-  useEffect(() => {
-    const found = codigo ? findOrder(codigo) : undefined;
-    setOrder(found);
-    setNotFound(Boolean(codigo) && !found);
-  }, [codigo]);
-
-  function search() {
-    navigate({ to: "/seguimiento", search: { codigo: input.trim().toUpperCase() } });
-  }
-
-
-  const progress = order
-    ? Math.round(((order.statusIndex + 1) / ORDER_STATUSES.length) * 100)
-    : 0;
-
+  const [input, setInput] = useState(codigo || "");
+  const query = useQuery({
+    queryKey: ["tracking", codigo],
+    queryFn: () => api<Quote[]>("quotes?code=" + encodeURIComponent(codigo || "")),
+    enabled: Boolean(codigo),
+    retry: false,
+  });
+  const order = query.data?.[0];
   return (
-    <section className="mx-auto max-w-5xl px-6 pt-14 pb-20">
-      <SectionHeading
-        eyebrow="Seguimiento"
-        title="Consulta tu pedido"
-        text="Ingresa el código que recibiste al enviar tu solicitud."
-      />
-
-      <GlassCard className="mt-8 p-6">
-        <div className="flex flex-col gap-3 sm:flex-row">
+    <>
+      <GlassCard className="p-6">
+        <form
+          className="flex flex-col gap-3 sm:flex-row"
+          onSubmit={(e) => {
+            e.preventDefault();
+            navigate({ to: "/seguimiento", search: { codigo: input.trim().toUpperCase() } });
+          }}
+        >
           <input
+            aria-label="Código de proyecto"
+            required
+            maxLength={60}
             className={inputClass}
-            placeholder="PL-2026-00124"
+            placeholder="Tu código PL-…"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && search()}
           />
-          <Button variant="brand" onClick={search} className="sm:w-auto">
-            <Search className="size-4" /> Buscar
+          <Button>
+            <Search className="size-4" />
+            Buscar
           </Button>
-        </div>
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <Button
-            variant="ghost"
-            className="px-4 py-2 text-xs"
-            onClick={() => {
-              const demo = DEMO_ORDERS[0]!.code;
-              setInput(demo);
-              navigate({ to: "/seguimiento", search: { codigo: demo } });
-            }}
-          >
-            Ver pedido de demostración
-          </Button>
-          <p className="text-xs text-muted-foreground">
-            Códigos de demostración: {DEMO_ORDERS.map((o) => o.code).join(" · ")}
-          </p>
-        </div>
-
+        </form>
       </GlassCard>
-
-      {codigo && !order && notFound ? (
-        <GlassCard className="mt-6 p-6 text-sm text-muted-foreground">
-          No encontramos el código <span className="text-foreground">{codigo}</span>. Verifica e
-          intenta de nuevo.
+      {codigo && query.isPending && (
+        <p role="status" className="mt-6 text-muted-foreground">
+          Consultando tu solicitud…
+        </p>
+      )}
+      {query.isError && (
+        <p role="alert" className="mt-6 text-red-300">
+          No pudimos consultar el proyecto. Intenta de nuevo.
+        </p>
+      )}
+      {codigo && query.isSuccess && !order && (
+        <GlassCard className="mt-6 p-6">
+          <p className="text-muted-foreground">
+            No encontramos ese código en tu cuenta. Verifica que sea el código de tu solicitud.
+          </p>
         </GlassCard>
-      ) : null}
-
-      {order ? (
-        <div className="mt-6 grid animate-step-in gap-6 lg:grid-cols-2">
+      )}
+      {order && (
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
           <GlassCard className="p-6">
-            <p className="label-caps">Estados del pedido</p>
-            <ol className="relative mt-5">
-              <div className="absolute top-2 bottom-2 left-[15px] w-px bg-border" />
-              {ORDER_STATUSES.map((s, i) => {
-                const done = i < order.statusIndex;
-                const current = i === order.statusIndex;
-                return (
-                  <li key={s} className="relative flex gap-4 pb-5 last:pb-0">
-                    <span
-                      className={`relative z-10 grid size-8 shrink-0 place-items-center rounded-full text-xs font-bold ${
-                        current
-                          ? "bg-accent text-accent-foreground ring-4 ring-accent/20"
-                          : done
-                            ? "bg-accent/30 text-foreground"
-                            : "bg-white/10 text-muted-foreground"
-                      }`}
-                    >
-                      {i + 1}
-                    </span>
-                    <div>
-                      <p
-                        className={`text-sm ${current ? "font-semibold text-accent" : done ? "text-foreground" : "text-muted-foreground"}`}
-                      >
-                        {s}
-                      </p>
-                      {current ? (
-                        <p className="text-xs text-muted-foreground">En curso · {progress}%</p>
-                      ) : null}
-                    </div>
-                  </li>
-                );
-              })}
+            <p className="label-caps">Estado de fabricación</p>
+            <ol className="mt-6 space-y-5">
+              {ORDER_STATUSES.map((status, i) => (
+                <li key={status} className="flex items-center gap-3">
+                  <span
+                    className={
+                      "grid size-8 shrink-0 place-items-center rounded-full text-xs " +
+                      (i <= order.status_index
+                        ? "bg-accent text-accent-foreground"
+                        : "bg-white/5 text-muted-foreground")
+                    }
+                  >
+                    {i + 1}
+                  </span>
+                  <span
+                    className={
+                      i === order.status_index
+                        ? "font-semibold text-accent"
+                        : "text-sm text-muted-foreground"
+                    }
+                  >
+                    {status}
+                  </span>
+                </li>
+              ))}
             </ol>
           </GlassCard>
-
-          <div className="space-y-4">
+          <div className="space-y-5">
             <GlassCard className="p-6">
-              <p className="label-caps">Detalle del pedido</p>
-              <div className="mt-4 space-y-2 text-sm">
+              <p className="font-mono text-xs text-muted-foreground">{order.code}</p>
+              <h2 className="mt-3 text-2xl font-bold">{order.project}</h2>
+              <dl className="mt-5 space-y-4 text-sm">
                 {[
-                  ["Pedido", order.code],
-                  ["Proyecto", order.project],
-                  ["Tecnología", order.technology],
                   ["Material", order.material],
-                  ["Cantidad", `${order.quantity} unidades`],
+                  ["Cantidad", String(order.quantity)],
                   ["Prioridad", order.priority],
-                  ["Entrega estimada", order.estimatedDelivery],
-                ].map(([k, v]) => (
-                  <div key={k} className="flex justify-between gap-4 border-b border-border/60 py-1.5">
-                    <span className="text-muted-foreground">{k}</span>
-                    <span className="text-right text-foreground">{v}</span>
+                  [
+                    "Cotización",
+                    order.price === null ? "Por confirmar" : "L " + Number(order.price).toFixed(2),
+                  ],
+                  ["Entrega", order.estimated_delivery || "Por confirmar"],
+                ].map(([key, value]) => (
+                  <div key={key} className="flex justify-between gap-4 border-b border-border pb-3">
+                    <dt className="text-muted-foreground">{key}</dt>
+                    <dd>{value}</dd>
                   </div>
                 ))}
-              </div>
+              </dl>
             </GlassCard>
             <GlassCard className="p-6">
-              <div className="mb-2 flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Progreso</span>
-                <span className="font-semibold text-accent">{progress}%</span>
-              </div>
-              <ProgressBar value={progress} />
+              <ProgressBar value={((order.status_index + 1) / ORDER_STATUSES.length) * 100} />
               <p className="mt-3 text-xs text-muted-foreground">
-                Estado actual: {ORDER_STATUSES[order.statusIndex]}
+                {ORDER_STATUSES[order.status_index]}
               </p>
             </GlassCard>
           </div>
         </div>
-      ) : null}
-    </section>
+      )}
+    </>
   );
 }

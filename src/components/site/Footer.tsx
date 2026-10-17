@@ -1,37 +1,39 @@
 import { Link } from "@tanstack/react-router";
 import { BRAND, FOOTER_LINKS } from "@/lib/protolab";
 import { Logo } from "./Navbar";
-
 export function Footer() {
   return (
-    <footer className="mt-10 border-t border-border">
+    <footer className="mt-10 border-t border-border pb-24">
       <div className="mx-auto grid max-w-7xl gap-8 px-6 py-12 md:grid-cols-3">
         <div>
           <Logo />
-          <p className="mt-3 max-w-xs text-sm text-muted-foreground">{BRAND.tagline}</p>
+          <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
+            Una comunidad que comparte ideas. Un taller que las hace realidad.
+          </p>
         </div>
-        <nav className="grid grid-cols-2 gap-y-2 text-sm text-muted-foreground">
+        <nav
+          aria-label="Enlaces del pie"
+          className="grid grid-cols-2 gap-y-3 text-sm text-muted-foreground"
+        >
           {FOOTER_LINKS.map((l) => (
-            <Link key={l.to} to={l.to} className="transition-colors hover:text-foreground">
+            <Link key={l.to} to={l.to} className="hover:text-accent">
               {l.label}
             </Link>
           ))}
         </nav>
-        <div className="space-y-2 text-sm text-muted-foreground">
-          <p className="label-caps text-accent">Datos de demostración</p>
-          <p>{BRAND.email}</p>
-          <p>WhatsApp · {BRAND.whatsapp}</p>
-          <p className="label-caps">{BRAND.country}</p>
-          <div className="pt-2 text-xs">
-            <Link to="/panel" className="hover:text-foreground">
-              Mis proyectos
-            </Link>
-          </div>
+        <div>
+          <p className="label-caps text-accent">Crea con nosotros</p>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Comparte tu diseño o encuentra tu próxima pieza en la comunidad.
+          </p>
+          <Link to="/publicar" className="mt-4 inline-block text-sm font-semibold text-accent">
+            Publicar un diseño ↗
+          </Link>
+          <p className="mt-5 text-xs text-muted-foreground">{BRAND.country}</p>
         </div>
       </div>
-      <div className="mx-auto max-w-7xl px-6 pb-8 text-xs text-muted-foreground/70">
-        © 2026 {BRAND.name}. Prototipo académico — MVP de demostración. Precios, tiempos y
-        contactos mostrados son datos de demostración.
+      <div className="mx-auto max-w-7xl border-t border-border px-6 pt-6 text-xs text-muted-foreground">
+        © {new Date().getFullYear()} ProtoLab · Diseña. Comparte. Fabrica.
       </div>
     </footer>
   );

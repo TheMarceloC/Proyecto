@@ -22,8 +22,14 @@ export const Route = createFileRoute("/materiales")({
 });
 
 const terms = [
-  { t: "Tolerancia", d: "Variación aceptable en las medidas de la pieza (±0.2 mm típico)." },
-  { t: "Relleno (infill)", d: "Cantidad de material interno: más relleno, más resistencia y costo." },
+  {
+    t: "Tolerancia",
+    d: "Variación admisible de una dimensión; se acuerda según el diseño y el proceso.",
+  },
+  {
+    t: "Relleno (infill)",
+    d: "Estructura interna de la pieza. Su efecto depende del patrón, el material y las cargas.",
+  },
   { t: "Orientación", d: "Cómo se coloca la pieza al imprimir; afecta la resistencia." },
 ];
 

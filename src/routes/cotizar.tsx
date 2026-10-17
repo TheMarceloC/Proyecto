@@ -1,5 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { api, uploadFile, errorText, type Design } from "@/lib/community";
+import { AccountForm, useMember } from "@/components/community/Account";
 import {
   ArrowLeft,
   ArrowRight,
@@ -33,23 +36,23 @@ import {
   REQUIREMENTS,
   START_OPTIONS,
   USE_CASES,
-  estimatePrice,
-  estimatedDays,
-  generateCode,
   recommendMaterial,
-  saveOrder,
   type StartOptionId,
 } from "@/lib/protolab";
 
-type SearchParams = { inicio?: StartOptionId };
+type SearchParams = { inicio?: StartOptionId; diseno?: string };
 
 const START_IDS = START_OPTIONS.map((o) => o.id) as string[];
 
 export const Route = createFileRoute("/cotizar")({
-  validateSearch: (search: Record<string, unknown>): SearchParams =>
-    typeof search["inicio"] === "string" && START_IDS.includes(search["inicio"])
+  validateSearch: (search: Record<string, unknown>): SearchParams => ({
+    ...(typeof search["inicio"] === "string" && START_IDS.includes(search["inicio"])
       ? { inicio: search["inicio"] as StartOptionId }
-      : {},
+      : {}),
+    ...(typeof search["diseno"] === "string" && /^[0-9a-f-]{36}$/.test(search["diseno"])
+      ? { diseno: search["diseno"] }
+      : {}),
+  }),
   head: () => ({
     meta: [
       { title: "Cotizar mi pieza — ProtoLab" },
@@ -80,10 +83,19 @@ const startIcons = [FileBox, Pencil, Package, Lightbulb];
 const COLORS = ["Negro", "Blanco", "Gris", "Otro", "No importa"];
 const TECHNOLOGY = "Impresión 3D FDM";
 
-type UploadState = { name: string; size: string; status: "cargando" | "listo" } | null;
+type UploadState = { name: string; size: string; status: "cargando" | "listo"; raw: File } | null;
 
 function CotizarPage() {
-  const { inicio } = Route.useSearch();
+  const { inicio, diseno } = Route.useSearch();
+  const member = useMember();
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const linkedDesign = useQuery({
+    queryKey: ["design", diseno],
+    queryFn: () => api<Design>("designs/" + diseno),
+    enabled: Boolean(diseno),
+    retry: false,
+  });
   const [step, setStep] = useState(0);
   const [start, setStart] = useState<StartOptionId>(inicio ?? "archivo");
   const [useCase, setUseCase] = useState(USE_CASES[0]!);
@@ -114,11 +126,6 @@ function CotizarPage() {
         ? "No estoy seguro"
         : "No";
 
-  const price = useMemo(
-    () => estimatePrice({ material: effectiveMaterial, quantity, priority, mechanical }),
-    [effectiveMaterial, quantity, priority, mechanical],
-  );
-
   const progress = Math.round(((step + 1) / STEPS.length) * 100);
 
   function upload(list: FileList | null, kind: "cad" | "ref") {
@@ -126,28 +133,61 @@ function CotizarPage() {
     if (!f) return;
     const size = `${(f.size / 1024 / 1024).toFixed(1)} MB`;
     const setter = kind === "cad" ? setFile : setRefFile;
-    setter({ name: f.name, size, status: "cargando" });
-    setTimeout(() => setter({ name: f.name, size, status: "listo" }), 900);
-    toast.success("Archivo cargado", { description: f.name });
+    if (f.size > 50 * 1024 * 1024) {
+      toast.error("El archivo debe pesar como máximo 50 MB.");
+      return;
+    }
+    setter({ name: f.name, size, status: "listo", raw: f });
   }
 
-  function submit() {
-    const newCode = generateCode();
-    saveOrder({
-      code: newCode,
-      project: projectName || detail.slice(0, 40) || `${useCase} · pieza personalizada`,
-      material: effectiveMaterial,
-      technology: TECHNOLOGY,
-      quantity,
-      priority,
-      statusIndex: 0,
-      createdAt: new Date().toLocaleDateString("es-HN"),
-      estimatedDelivery: estimatedDays(priority),
-      price,
-      client: client.name || "Cliente",
-    });
-    setCode(newCode);
-    toast.success("Solicitud recibida correctamente.");
+  async function submit() {
+    if (!member.data?.user) {
+      setSubmitError("Inicia sesión para guardar tu cotización.");
+      return;
+    }
+    if (
+      !client.name.trim() ||
+      !client.phone.trim() ||
+      !client.city.trim() ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(client.email)
+    ) {
+      setSubmitError("Completa nombre, correo válido, teléfono y ciudad en el paso Entrega.");
+      return;
+    }
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      const selected = hasFileFlow ? file : refFile;
+      const file_path = selected ? await uploadFile(selected.raw, "quote") : null;
+      const result = await api<{ code: string }>("quotes", {
+        project: projectName || linkedDesign.data?.title || detail.slice(0, 100) || useCase,
+        material: effectiveMaterial,
+        quantity,
+        priority,
+        client_name: client.name,
+        email: client.email,
+        phone: client.phone,
+        city: client.city,
+        detail,
+        file_path,
+        design_id: linkedDesign.data?.id || null,
+        specifications: {
+          start,
+          useCase,
+          requirement,
+          dims,
+          color,
+          delivery,
+          materialSelection: material,
+        },
+      });
+      setCode(result.code);
+      toast.success("Solicitud guardada. Puedes consultar su seguimiento.");
+    } catch (error) {
+      setSubmitError(errorText(error));
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (code) {
@@ -184,7 +224,13 @@ function CotizarPage() {
         text="Cinco pasos guiados. No necesitas saber de impresión 3D."
       />
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_300px]">
+      {linkedDesign.data && (
+        <div className="mt-6 rounded-2xl border border-accent/30 bg-accent/10 p-4 text-sm">
+          Fabricar diseño: <strong>{linkedDesign.data.title}</strong> · por{" "}
+          {linkedDesign.data.author_name}
+        </div>
+      )}
+      <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_340px]">
         <GlassCard className="rounded-3xl p-5 sm:p-7">
           {/* progreso */}
           <div>
@@ -193,7 +239,9 @@ function CotizarPage() {
                 <li key={s} className="flex items-center gap-2">
                   <span
                     className={`grid size-6 shrink-0 place-items-center rounded-full text-[11px] font-bold transition ${
-                      i <= step ? "bg-accent text-accent-foreground" : "bg-white/10 text-muted-foreground"
+                      i <= step
+                        ? "bg-accent text-accent-foreground"
+                        : "bg-white/10 text-muted-foreground"
                     }`}
                   >
                     {i + 1}
@@ -305,7 +353,9 @@ function CotizarPage() {
                       <p className="mt-3 text-sm font-medium text-foreground">
                         Arrastra tu archivo aquí o haz clic para seleccionarlo
                       </p>
-                      <p className="mt-1 text-xs text-muted-foreground">.STL · .OBJ · .STEP · .STP</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        .STL · .OBJ · .STEP · .STP
+                      </p>
                       <input
                         ref={fileRef}
                         type="file"
@@ -561,8 +611,8 @@ function CotizarPage() {
             ) : null}
 
             {step === 4 ? (
-              <div className="grid gap-6 lg:grid-cols-3">
-                <div className="space-y-2 text-sm lg:col-span-2">
+              <div className="grid gap-6">
+                <div className="space-y-2 text-sm">
                   <p className="label-caps mb-3">Resumen de la solicitud</p>
                   {[
                     ["Proyecto", projectName || detail.slice(0, 40) || `${useCase}`],
@@ -596,28 +646,47 @@ function CotizarPage() {
                     ["Entrega", delivery],
                     ["Cliente", client.name || "—"],
                   ].map(([k, v]) => (
-                    <div key={k} className="flex justify-between gap-6 border-b border-border/60 py-2">
+                    <div
+                      key={k}
+                      className="flex justify-between gap-6 border-b border-border/60 py-2"
+                    >
                       <span className="text-muted-foreground">{k}</span>
                       <span className="text-right text-foreground">{v}</span>
                     </div>
                   ))}
                 </div>
                 <GlassCard className="h-max p-5">
-                  <p className="label-caps">Estimación preliminar</p>
-                  <p className="mt-1 font-display text-3xl font-bold text-accent">L {price}.00</p>
+                  <p className="label-caps">Cotización a medida</p>
+                  <p className="mt-2 font-display text-2xl font-bold text-accent">
+                    Revisamos tu pieza.
+                  </p>
                   <p className="mt-2 text-xs text-muted-foreground">
                     El precio final se confirma después de revisar el diseño, material, dimensiones
                     y características de fabricación.
                   </p>
                   <div className="mt-4 border-t border-border/60 pt-3 text-xs">
                     <p className="text-muted-foreground">Tiempo estimado</p>
-                    <p className="mt-1 text-foreground">{estimatedDays(priority)}</p>
+                    <p className="mt-1 text-foreground">Por confirmar con el equipo</p>
                     <p className="mt-1 text-[11px] text-muted-foreground">
                       Depende del tamaño, material, complejidad, cantidad y capacidad disponible.
                     </p>
                   </div>
-                  <Button className="mt-5 w-full" onClick={submit}>
-                    Enviar solicitud de cotización
+                  {!member.data?.user && (
+                    <div className="mt-5">
+                      <AccountForm />
+                    </div>
+                  )}
+                  {submitError && (
+                    <p role="alert" className="mt-4 text-sm text-red-300">
+                      {submitError}
+                    </p>
+                  )}
+                  <Button
+                    className="mt-5 w-full"
+                    disabled={submitting || !member.data?.user}
+                    onClick={submit}
+                  >
+                    {submitting ? "Guardando solicitud…" : "Enviar solicitud de cotización"}
                   </Button>
                 </GlassCard>
               </div>
@@ -681,7 +750,7 @@ function UploadRow({
       {upload.status === "cargando" ? (
         <Loader2 className="size-4 animate-spin text-accent" />
       ) : (
-        <StatusBadge label="Cargado" />
+        <StatusBadge label="Seleccionado" />
       )}
       <button
         type="button"

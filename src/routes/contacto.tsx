@@ -1,102 +1,45 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { Mail, MessageCircle, MapPin } from "lucide-react";
-import { toast } from "sonner";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowUpRight, MessagesSquare, MapPin } from "lucide-react";
 import { PageHeader } from "@/components/site/sections";
-import { Button, Field, GlassCard, inputClass } from "@/components/site/ui";
-import { BRAND } from "@/lib/protolab";
-
+import { GlassCard } from "@/components/site/ui";
+import { MessageForm } from "@/components/community/MessageForm";
 export const Route = createFileRoute("/contacto")({
-  head: () => ({
-    meta: [
-      { title: "Contacto — ProtoLab" },
-      {
-        name: "description",
-        content: "Escríbenos por correo o WhatsApp para resolver dudas sobre tu pieza o proyecto.",
-      },
-      { property: "og:title", content: "Contacto — ProtoLab" },
-      {
-        property: "og:description",
-        content: "Hablemos de tu pieza: correo y WhatsApp de ProtoLab en Honduras.",
-      },
-    ],
-  }),
-  component: ContactoPage,
+  head: () => ({ meta: [{ title: "Hablemos de tu proyecto — ProtoLab" }] }),
+  component: Contact,
 });
-
-function ContactoPage() {
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
-
+function Contact() {
   return (
     <>
       <PageHeader
-        eyebrow="Contacto"
-        title="Hablemos de tu proyecto"
-        text="Cuéntanos qué necesitas fabricar y te respondemos con opciones."
+        eyebrow="Hagamos algo"
+        title="Las buenas piezas empiezan conversando."
+        text="Cuéntanos qué estás creando. Revisaremos tu solicitud y buscaremos cómo ayudarte."
       />
-      <section className="mx-auto max-w-5xl px-6 py-12">
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div className="space-y-4">
-            <GlassCard className="flex items-center gap-4 p-5">
-              <Mail className="size-5 text-accent" />
-              <div>
-                <p className="label-caps">Correo</p>
-                <p className="text-sm text-foreground">{BRAND.email}</p>
-              </div>
-            </GlassCard>
-            <GlassCard className="flex items-center gap-4 p-5">
-              <MessageCircle className="size-5 text-accent" />
-              <div>
-                <p className="label-caps">WhatsApp</p>
-                <p className="text-sm text-foreground">{BRAND.whatsapp}</p>
-              </div>
-            </GlassCard>
-            <GlassCard className="flex items-center gap-4 p-5">
-              <MapPin className="size-5 text-accent" />
-              <div>
-                <p className="label-caps">Ubicación</p>
-                <p className="text-sm text-foreground">{BRAND.country} · entrega local y envíos</p>
-              </div>
-            </GlassCard>
-          </div>
-          <GlassCard className="p-6">
-            <div className="grid gap-4">
-              <Field label="Nombre">
-                <input
-                  className={inputClass}
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                />
-              </Field>
-              <Field label="Correo">
-                <input
-                  type="email"
-                  className={inputClass}
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                />
-              </Field>
-              <Field label="Mensaje">
-                <textarea
-                  rows={5}
-                  className={inputClass}
-                  value={form.message}
-                  onChange={(e) => setForm({ ...form, message: e.target.value })}
-                />
-              </Field>
-              <Button
-                onClick={() => {
-                  toast.success("Mensaje enviado", {
-                    description: "Te responderemos por correo.",
-                  });
-                  setForm({ name: "", email: "", message: "" });
-                }}
-              >
-                Enviar mensaje
-              </Button>
-            </div>
+      <section className="mx-auto grid max-w-6xl gap-8 px-6 py-12 lg:grid-cols-2">
+        <div className="space-y-5">
+          <GlassCard className="p-7">
+            <MessagesSquare className="size-7 text-accent" />
+            <h2 className="mt-4 text-xl font-bold">Un espacio para tu proyecto</h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              Escribe desde tu cuenta para que podamos relacionar tu consulta con tus diseños y
+              solicitudes.
+            </p>
           </GlassCard>
+          <GlassCard className="p-7">
+            <MapPin className="size-6 text-accent" />
+            <p className="mt-3 font-semibold">Honduras</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              La entrega y el envío se coordinan al revisar tu proyecto.
+            </p>
+          </GlassCard>
+          <Link to="/cotizar" className="inline-flex gap-2 font-semibold text-accent">
+            ¿Ya tienes la pieza en mente? Cotízala
+            <ArrowUpRight className="size-5" />
+          </Link>
         </div>
+        <GlassCard className="p-6 sm:p-8">
+          <MessageForm kind="contact" />
+        </GlassCard>
       </section>
     </>
   );
