@@ -20,7 +20,13 @@ import {
 import soporte from "@/assets/proj-soporte-sensor.jpg";
 import carcasa from "@/assets/proj-carcasa.jpg";
 import engranaje from "@/assets/proj-engranaje.jpg";
-import { MATERIAL_PRICES, formatLempiras, type PricedMaterial } from "@/lib/material-pricing";
+import {
+  MATERIAL_PRICES,
+  formatLempiras,
+  formatMaterialRate,
+  materialEstimate,
+  type PricedMaterial,
+} from "@/lib/material-pricing";
 import {
   AUDIENCES,
   HOME_STEPS,
@@ -271,11 +277,11 @@ export function MaterialsSection() {
           <GlassCard key={m.code} className="p-6 transition hover:border-accent/30">
             <span className="font-display text-xl font-bold text-foreground">{m.code}</span>
             <p className="mt-3 text-2xl font-bold text-accent">
-              {formatLempiras(MATERIAL_PRICES[m.code as PricedMaterial])}
+              {formatMaterialRate(MATERIAL_PRICES[m.code as PricedMaterial])}
               <span className="ml-1 text-xs font-normal text-muted-foreground">/ g</span>
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              50 g ≈ {formatLempiras(MATERIAL_PRICES[m.code as PricedMaterial] * 50)} en material
+              50 g ≈ {formatLempiras(materialEstimate(m.code, 50)!.total)} con recargo incluido
             </p>
             <p className="mt-3 text-xs text-muted-foreground">Ideal para:</p>
             <p className="mt-1 text-sm leading-relaxed text-foreground">{m.ideal}</p>
@@ -286,8 +292,8 @@ export function MaterialsSection() {
         ))}
       </div>
       <p className="mt-5 text-sm text-muted-foreground">
-        Bases orientativas de material. Fabricación y envío se confirman aparte. ¿Necesitas
-        modelado? Materiales + consultoría por cotizar.
+        Material con recargo incluido. El precio depende de los gramos consumidos. Envío y otros
+        trabajos se confirman aparte. ¿Necesitas modelado? Materiales + consultoría por cotizar.
       </p>
       <div className="mt-8 flex flex-wrap gap-3">
         <ActionLink to="/asesoria" variant="ghost">

@@ -32,10 +32,12 @@ import {
 } from "@/components/site/ui";
 import { PieceVisual } from "@/components/site/PieceVisual";
 import { MaterialEstimate } from "@/components/site/MaterialEstimate";
+import { PrintCostControls } from "@/components/site/PrintCostControls";
+import { DEFAULT_PRINT_SETTINGS, printEstimate } from "@/lib/print-pricing";
 import {
   DEFAULT_GRAMS,
   materialEstimate,
-  formatLempiras,
+  formatMaterialRate,
   MATERIAL_PRICES,
   type PricedMaterial,
 } from "@/lib/material-pricing";
@@ -117,6 +119,7 @@ function CotizarPage() {
   const [quantity, setQuantity] = useState(1);
   const [gramsInput, setGramsInput] = useState(String(DEFAULT_GRAMS));
   const [weightEdited, setWeightEdited] = useState(false);
+  const [printSettings, setPrintSettings] = useState(DEFAULT_PRINT_SETTINGS);
   const [priority, setPriority] = useState("Normal");
   const [detail, setDetail] = useState("");
   const [projectName, setProjectName] = useState("");
@@ -132,6 +135,7 @@ function CotizarPage() {
   const grams = Number(gramsInput);
   const needsDesign = !hasFileFlow && !linkedDesign.data;
   const estimate = materialEstimate(effectiveMaterial, grams, quantity);
+  const printing = printEstimate(effectiveMaterial, grams, quantity, printSettings);
   const mechanical =
     requirement === "Debe soportar peso" || requirement === "Debe resistir golpes"
       ? "Sí"
@@ -156,6 +160,10 @@ function CotizarPage() {
   async function submit() {
     if (!member.data?.user) {
       setSubmitError("Inicia sesión para guardar tu cotización.");
+      return;
+    }
+    if (!printing) {
+      setSubmitError("Revisa el peso, el tiempo y los costos en el paso Fabricación.");
       return;
     }
     if (
@@ -197,6 +205,11 @@ function CotizarPage() {
             gramsPerPiece: estimate?.grams ?? null,
             assumedWeight: !weightEdited,
             needsDesign,
+          },
+          printing: {
+            ...printSettings,
+            printer: printing?.profile.id ?? printSettings.printer,
+            effectiveWatts: printing?.watts ?? null,
           },
         },
       });
@@ -520,7 +533,7 @@ function CotizarPage() {
                         <span>
                           {m.code}
                           <span className="block text-[10px] opacity-80">
-                            {formatLempiras(MATERIAL_PRICES[m.code as PricedMaterial])}/g
+                            {formatMaterialRate(MATERIAL_PRICES[m.code as PricedMaterial])}/g
                           </span>
                         </span>
                       </PillOption>
@@ -595,6 +608,11 @@ function CotizarPage() {
                     ))}
                   </div>
                 </Field>
+                <PrintCostControls
+                  value={printSettings}
+                  onChange={setPrintSettings}
+                  material={effectiveMaterial}
+                />
               </div>
             ) : null}
 
@@ -705,6 +723,7 @@ function CotizarPage() {
                     quantity={quantity}
                     needsDesign={needsDesign}
                     assumed={!weightEdited}
+                    settings={printSettings}
                   />
                   <p className="mt-2 text-xs text-muted-foreground">
                     Confirmaremos el consumo de material y la cotización completa antes de fabricar.
@@ -759,6 +778,7 @@ function CotizarPage() {
         <div className="order-first lg:order-none">
           <div className="lg:sticky lg:top-24">
             <PieceVisual
+              compact={step < 4}
               step={step}
               material={effectiveMaterial}
               label={
@@ -775,6 +795,7 @@ function CotizarPage() {
                   quantity={quantity}
                   needsDesign={needsDesign}
                   assumed={!weightEdited}
+                  settings={printSettings}
                 />
               </div>
             )}

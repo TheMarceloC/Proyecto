@@ -7,6 +7,8 @@
     "node": "24.x"
   },
   "scripts": {
+    "test:pricing": "node --test tests/material-pricing.test.mjs tests/print-pricing.test.mjs",
+    "test:catalog": "node --test tests/catalog-availability.test.mjs",
     "test:policies": "node --test tests/community-policies.test.mjs",
     "test:api": "node --test tests/community-api.test.mjs",
     "dev": "vite dev",

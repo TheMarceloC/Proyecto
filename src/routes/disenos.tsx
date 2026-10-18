@@ -67,7 +67,6 @@ function DesignsPage() {
   const member = useMember();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("Todos");
-  const showSamples = !designs.isPending && !designs.isError && designs.data?.length === 0;
   const samples = SAMPLE_DESIGNS.filter(
     (d) =>
       (category === "Todos" || d.category === category) &&
@@ -134,7 +133,7 @@ function DesignsPage() {
         </div>
         <p className="flex items-center gap-2 text-xs text-muted-foreground">
           <SlidersHorizontal className="size-4" />
-          {showSamples ? "Vista previa de la colección" : "Publicaciones revisadas por ProtoLab"}
+          Diseños de muestra y publicaciones de la comunidad
         </p>
       </div>
       <div className="mt-5 flex flex-wrap gap-2" aria-label="Categorías">
@@ -158,30 +157,66 @@ function DesignsPage() {
       <div className="mt-9 flex items-center justify-between">
         <h2 className="text-xl font-bold">Explora la colección</h2>
         <span className="text-xs text-muted-foreground">
-          {showSamples
-            ? samples.length + (samples.length === 1 ? " muestra" : " muestras")
-            : designs.data
-              ? filtered.length + " diseños"
-              : ""}
+          {filtered.length} publicados · {samples.length} de muestra
         </span>
       </div>
-      {designs.isPending ? (
-        <div role="status" className="grid gap-5 py-6 sm:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-72 animate-pulse rounded-2xl bg-white/5" />
-          ))}
-        </div>
-      ) : designs.isError ? (
-        <GlassCard className="mt-6 p-8 text-center">
-          <p className="text-muted-foreground">No pudimos cargar los diseños. Intenta de nuevo.</p>
-          <Button variant="ghost" className="mt-4" onClick={() => designs.refetch()}>
-            Volver a cargar
+      {designs.isPending && (
+        <p role="status" className="mt-4 text-sm text-muted-foreground">
+          Cargando publicaciones de la comunidad… Puedes explorar los diseños de muestra.
+        </p>
+      )}
+      {designs.isError && (
+        <GlassCard className="mt-4 p-5">
+          <p role="status" className="text-sm text-muted-foreground">
+            No pudimos cargar las publicaciones de la comunidad. Los diseños de muestra siguen
+            disponibles.
+          </p>
+          <Button variant="ghost" className="mt-3" onClick={() => designs.refetch()}>
+            Volver a cargar publicaciones
           </Button>
         </GlassCard>
-      ) : showSamples && samples.length ? (
+      )}
+      {filtered.length > 0 && (
+        <>
+          <h3 className="mt-6 font-semibold">Publicaciones de la comunidad</h3>
+          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.map((design) => (
+              <Link key={design.id} to="/diseno/$id" params={{ id: design.id }}>
+                <GlassCard className="group h-full overflow-hidden transition hover:-translate-y-1 hover:border-accent/40">
+                  {design.image_url ? (
+                    <img
+                      src={design.image_url}
+                      alt={design.title}
+                      className="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="grid aspect-[4/3] place-items-center bg-brand/10">
+                      <Box className="size-20 text-accent" />
+                    </div>
+                  )}
+                  <div className="p-5">
+                    <div className="flex items-center justify-between text-[11px] uppercase tracking-wider text-muted-foreground">
+                      <span>{design.category}</span>
+                      <span>{design.material}</span>
+                    </div>
+                    <h3 className="mt-3 text-lg font-bold">{design.title}</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">por {design.author_name}</p>
+                    <div className="mt-5 flex items-center justify-between border-t border-border pt-4 text-sm">
+                      <span className="text-accent">Ver diseño</span>
+                      <ArrowUpRight className="size-4 text-accent" />
+                    </div>
+                  </div>
+                </GlassCard>
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
+      {samples.length > 0 ? (
         <>
           <p className="mt-4 text-sm text-muted-foreground">
-            Diseños de muestra para inspirarte. Las publicaciones de la comunidad aparecerán aquí al
+            Diseños de muestra para inspirarte. Las publicaciones de la comunidad se muestran al
             aprobarse; estas muestras no incluyen archivos descargables.
           </p>
           <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -211,7 +246,9 @@ function DesignsPage() {
                   <div className="mt-5 border-t border-border pt-4">
                     <p className="text-lg font-semibold text-accent">
                       ≈ {formatLempiras(materialEstimate(sample.material, sample.grams)!.total)}{" "}
-                      <span className="text-xs font-normal text-muted-foreground">en material</span>
+                      <span className="text-xs font-normal text-muted-foreground">
+                        material con recargo
+                      </span>
                     </p>
                     <p className="mt-1 text-[11px] text-muted-foreground">
                       Referencia de {sample.grams} g · peso ilustrativo
@@ -229,40 +266,7 @@ function DesignsPage() {
             ))}
           </div>
         </>
-      ) : filtered.length ? (
-        <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((design) => (
-            <Link key={design.id} to="/diseno/$id" params={{ id: design.id }}>
-              <GlassCard className="group h-full overflow-hidden transition hover:-translate-y-1 hover:border-accent/40">
-                {design.image_url ? (
-                  <img
-                    src={design.image_url}
-                    alt={design.title}
-                    className="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="grid aspect-[4/3] place-items-center bg-brand/10">
-                    <Box className="size-20 text-accent" />
-                  </div>
-                )}
-                <div className="p-5">
-                  <div className="flex items-center justify-between text-[11px] uppercase tracking-wider text-muted-foreground">
-                    <span>{design.category}</span>
-                    <span>{design.material}</span>
-                  </div>
-                  <h3 className="mt-3 text-lg font-bold">{design.title}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">por {design.author_name}</p>
-                  <div className="mt-5 flex items-center justify-between border-t border-border pt-4 text-sm">
-                    <span className="text-accent">Ver diseño</span>
-                    <ArrowUpRight className="size-4 text-accent" />
-                  </div>
-                </div>
-              </GlassCard>
-            </Link>
-          ))}
-        </div>
-      ) : (
+      ) : filtered.length === 0 ? (
         <div className="mt-6 rounded-2xl border border-dashed border-border bg-white/[0.02] px-6 py-12 text-center">
           <Box className="mx-auto size-10 text-accent" />
           <h3 className="mt-4 text-xl font-bold">
@@ -279,7 +283,7 @@ function DesignsPage() {
             <ArrowRight className="size-4" />
           </Link>
         </div>
-      )}
+      ) : null}
       <div className="mt-14 grid gap-5 md:grid-cols-3">
         {[
           { title: "Organiza tu espacio", category: "Organización", img: carcasa },

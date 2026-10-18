@@ -223,7 +223,7 @@ export const FAQS = [
   },
   {
     q: "¿Cómo se calcula el precio?",
-    a: "Mostramos una estimación de materiales: gramos por pieza × cantidad × precio por gramo. Si necesitas diseño, se suma consultoría por cotizar. La fabricación y el envío se confirman aparte, antes de iniciar el pedido.",
+    a: "Aplicamos un factor de 1.75 al costo del material consumido y sumamos electricidad según la impresora, las horas y la tarifa ENEE elegida. Puedes incluir máquina, mantenimiento, trabajo manual y otros costos en el ajuste del cálculo. Si necesitas diseño, se suma consultoría por cotizar. Envío y condiciones finales se confirman antes de fabricar.",
   },
   {
     q: "¿Puedo pedir una sola pieza?",

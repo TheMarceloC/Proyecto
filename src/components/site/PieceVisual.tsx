@@ -28,10 +28,12 @@ export function PieceVisual({
   step,
   material,
   label,
+  compact = false,
 }: {
   step: number;
   material: string;
   label?: string;
+  compact?: boolean;
 }) {
   const uid = useId().replace(/:/g, "");
   const stage = Math.min(4, Math.max(0, step));
@@ -58,7 +60,9 @@ export function PieceVisual({
       </div>
       <svg
         viewBox="0 0 400 405"
-        className="mx-auto w-full max-w-[390px]"
+        className={
+          compact ? "mx-auto w-full max-w-[260px] lg:max-w-[160px]" : "mx-auto w-full max-w-[390px]"
+        }
         role="img"
         aria-label={`Ensamblaje de una caja de engranajes: ${STAGES[stage]}`}
       >

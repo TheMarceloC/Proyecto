@@ -79,7 +79,13 @@ export function Dot() {
   return <span className="size-1.5 shrink-0 rounded-full bg-accent" />;
 }
 
-export function StatusBadge({ label, tone = "accent" }: { label: string; tone?: "accent" | "brand" | "muted" }) {
+export function StatusBadge({
+  label,
+  tone = "accent",
+}: {
+  label: string;
+  tone?: "accent" | "brand" | "muted";
+}) {
   const tones = {
     accent: "bg-accent/12 text-accent border-accent/25",
     brand: "bg-brand/15 text-brand border-brand/30",
@@ -130,9 +136,7 @@ export function OptionCard({
       onClick={onClick}
       className={cn(
         "rounded-xl border p-4 text-left transition",
-        selected
-          ? "border-accent bg-accent/10"
-          : "border-border bg-white/5 hover:bg-white/10",
+        selected ? "border-accent bg-accent/10" : "border-border bg-white/5 hover:bg-white/10",
       )}
     >
       <p className="text-sm font-medium text-foreground">{title}</p>
@@ -145,17 +149,20 @@ export function PillOption({
   selected,
   onClick,
   children,
+  disabled = false,
 }: {
   selected: boolean;
   onClick: () => void;
   children: ReactNode;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       className={cn(
-        "rounded-lg border py-2.5 text-center text-xs font-semibold transition",
+        "rounded-lg border py-2.5 text-center text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-40",
         selected
           ? "border-accent bg-accent/10 text-foreground"
           : "border-border bg-white/5 text-muted-foreground hover:bg-white/10",

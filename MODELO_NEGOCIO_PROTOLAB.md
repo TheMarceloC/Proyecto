@@ -60,11 +60,15 @@ Contribución del pedido = precio cobrado - costos variables del pedido
 Resultado del período = contribución total - costos fijos del período
 ```
 
-La web muestra ahora una referencia provisional solo de materiales, con bases
-por gramo y procedencia documentadas en [PRECIOS_MATERIALES.md](PRECIOS_MATERIALES.md).
-No representa el precio comercial completo ni los costos reales del inventario.
+La web usa los costos por kg proporcionados por el usuario el 18/10/2026 y aplica
+un factor de 1.75 al material consumido. El costo, el recargo del 75 % y el subtotal
+se desglosan según [PRECIOS_MATERIALES.md](PRECIOS_MATERIALES.md).
+La diferencia sobre material no es utilidad neta: faltan los demás costos operativos.
 La consultoría se cotiza aparte cuando hace falta desarrollar el diseño.
-No se usa un margen o una tarifa por hora sin medirlos.
+El cotizador suma energía según horas, perfil A1/X1C y tarifa ENEE, y permite
+registrar máquina, mano de obra y extras. Los campos opcionales en cero no
+constituyen costos operativos medidos. Ver [CALCULADORA_COSTOS.md](CALCULADORA_COSTOS.md).
+El factor de 1.75 es una decisión comercial del usuario; no implica una tarifa por hora.
 Si se fija un margen objetivo sobre ventas m, con 0 <= m < 1, el cálculo básico
 para los costos incluidos es Precio = Costo / (1 - m), antes de impuestos
 y de cargos porcentuales que requieran incorporarse al denominador.
