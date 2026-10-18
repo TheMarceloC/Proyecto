@@ -1,5 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { formatCustomerPrice } from "@/lib/material-pricing";
 import { useQuery } from "@tanstack/react-query";
 import { Plus, Upload } from "lucide-react";
 import { MemberGate } from "@/components/community/Account";
@@ -70,13 +69,13 @@ function Projects() {
               </div>
               <h3 className="mt-4 text-xl font-bold">{o.project}</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                {o.material} · {o.quantity} {o.quantity === 1 ? "pieza" : "piezas"} ·{" "}
+                {o.specifications["materialSelection"] === "auto"
+                  ? "Material por recomendar"
+                  : o.material}{" "}
+                · {o.quantity} {o.quantity === 1 ? "pieza" : "piezas"} ·{" "}
                 {new Date(o.created_at).toLocaleDateString("es-HN")}
               </p>
               <div className="mt-5 flex items-center justify-between">
-                <p className="text-sm">
-                  {o.price === null ? "Precio por confirmar" : formatCustomerPrice(Number(o.price))}
-                </p>
                 <Link
                   to="/seguimiento"
                   search={{ codigo: o.code }}

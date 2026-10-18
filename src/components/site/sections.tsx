@@ -20,8 +20,6 @@ import {
 import soporte from "@/assets/proj-soporte-sensor.jpg";
 import carcasa from "@/assets/proj-carcasa.jpg";
 import engranaje from "@/assets/proj-engranaje.jpg";
-import { formatCustomerPrice } from "@/lib/material-pricing";
-import { DEFAULT_PRINT_SETTINGS, printEstimate } from "@/lib/print-pricing";
 import {
   AUDIENCES,
   HOME_STEPS,
@@ -271,12 +269,6 @@ export function MaterialsSection() {
         {MATERIALS.map((m) => (
           <GlassCard key={m.code} className="p-6 transition hover:border-accent/30">
             <span className="font-display text-xl font-bold text-foreground">{m.code}</span>
-            <p className="mt-3 text-2xl font-bold text-accent">
-              {formatCustomerPrice(printEstimate(m.code, 50, 1, DEFAULT_PRINT_SETTINGS)!.total)}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Precio estimado · 1 pieza de 50 g y 2 h de impresión
-            </p>
             <p className="mt-3 text-xs text-muted-foreground">Ideal para:</p>
             <p className="mt-1 text-sm leading-relaxed text-foreground">{m.ideal}</p>
             <div className="mt-5">
@@ -286,8 +278,8 @@ export function MaterialsSection() {
         ))}
       </div>
       <p className="mt-5 text-sm text-muted-foreground">
-        Precios de referencia. Confirmamos el precio de tu pieza al revisar el proyecto. Envío
-        aparte. ¿Necesitas modelado? + consultoría por cotizar.
+        No necesitas conocer estos materiales. Cuéntanos para qué usarás la pieza y te ayudamos a
+        elegir. Puedes empezar con una idea o un boceto.
       </p>
       <div className="mt-8 flex flex-wrap gap-3">
         <ActionLink to="/asesoria" variant="ghost">

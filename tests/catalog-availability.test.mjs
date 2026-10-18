@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import server from "../.vercel/output/functions/__server.func/index.mjs";
 
-test("las páginas comerciales muestran precios enteros y no revelan el cálculo interno", async () => {
+test("las páginas comerciales no muestran importes y el cotizador no inventa un precio sin datos", async () => {
   for (const route of ["/", "/cotizar", "/disenos", "/servicios", "/materiales", "/faq"]) {
     const response = await server.fetch(new Request("http://localhost" + route), {
       waitUntil() {},
@@ -20,8 +20,11 @@ test("las páginas comerciales muestran precios enteros y no revelan el cálculo
       /recargo|margen|factor de 1\.75|costo del material consumido|ajustar electricidad/i,
       route,
     );
-    assert.doesNotMatch(visible, /L\s+[\d,]+\.\d/, route + " no debe mostrar centavos");
-    if (route === "/cotizar") assert.match(visible, /Precio final estimadoL 31/);
+    assert.doesNotMatch(visible, /L\s+[\d,]+/, route + " no debe mostrar importes de referencia");
+    if (route === "/cotizar") {
+      assert.match(visible, /Cotización a tu medida/);
+      assert.match(visible, /Puedes continuar sin saber el peso/);
+    }
   }
 });
 

@@ -1,5 +1,4 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { formatCustomerPrice } from "@/lib/material-pricing";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Search } from "lucide-react";
@@ -121,15 +120,14 @@ function TrackingContent() {
               <h2 className="mt-3 text-2xl font-bold">{order.project}</h2>
               <dl className="mt-5 space-y-4 text-sm">
                 {[
-                  ["Material", order.material],
+                  [
+                    "Material",
+                    order.specifications["materialSelection"] === "auto"
+                      ? "Por recomendar"
+                      : order.material,
+                  ],
                   ["Cantidad", String(order.quantity)],
                   ["Prioridad", order.priority],
-                  [
-                    "Cotización",
-                    order.price === null
-                      ? "Por confirmar"
-                      : formatCustomerPrice(Number(order.price)),
-                  ],
                   ["Entrega", order.estimated_delivery || "Por confirmar"],
                 ].map(([key, value]) => (
                   <div key={key} className="flex justify-between gap-4 border-b border-border pb-3">

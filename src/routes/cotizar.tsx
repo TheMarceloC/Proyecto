@@ -34,7 +34,7 @@ import { PieceVisual } from "@/components/site/PieceVisual";
 import { MaterialEstimate } from "@/components/site/MaterialEstimate";
 import { PrintCostControls } from "@/components/site/PrintCostControls";
 import { DEFAULT_PRINT_SETTINGS, printEstimate } from "@/lib/print-pricing";
-import { DEFAULT_GRAMS, materialEstimate } from "@/lib/material-pricing";
+import { materialEstimate } from "@/lib/material-pricing";
 import {
   MATERIALS as MATERIAL_LIST,
   REQUIREMENTS,
@@ -75,17 +75,16 @@ export const Route = createFileRoute("/cotizar")({
   component: CotizarPage,
 });
 
-const STEPS = ["Proyecto", "Diseño", "Fabricación", "Entrega", "Cotización"];
+const STEPS = ["Proyecto", "Tu idea", "Tu pieza", "Contacto", "Cotización"];
 const STEP_HINTS = [
   "Cuéntanos qué tienes y para qué es la pieza.",
-  "Sube tu archivo o tus referencias.",
-  "Definimos material, cantidad y prioridad.",
+  "Describe tu idea. Puedes añadir una foto o boceto si lo tienes.",
+  "Dinos cuántas piezas necesitas. De lo técnico nos encargamos nosotros.",
   "Cómo y a quién entregamos.",
   "Tu estimación preliminar.",
 ];
 const startIcons = [FileBox, Pencil, Package, Lightbulb];
 const COLORS = ["Negro", "Blanco", "Gris", "Otro", "No importa"];
-const TECHNOLOGY = "Impresión 3D FDM";
 
 type UploadState = { name: string; size: string; status: "cargando" | "listo"; raw: File } | null;
 
@@ -101,7 +100,7 @@ function CotizarPage() {
     retry: false,
   });
   const [step, setStep] = useState(0);
-  const [start, setStart] = useState<StartOptionId>(inicio ?? "archivo");
+  const [start, setStart] = useState<StartOptionId>(inicio ?? (diseno ? "archivo" : "idea"));
   const [useCase, setUseCase] = useState(USE_CASES[0]!);
   const [requirement, setRequirement] = useState(REQUIREMENTS[REQUIREMENTS.length - 1]!);
   const [file, setFile] = useState<UploadState>(null);
@@ -111,9 +110,8 @@ function CotizarPage() {
   const [material, setMaterial] = useState<string>("auto");
   const [color, setColor] = useState("No importa");
   const [quantity, setQuantity] = useState(1);
-  const [gramsInput, setGramsInput] = useState(String(DEFAULT_GRAMS));
-  const [weightEdited, setWeightEdited] = useState(false);
-  const [printSettings, setPrintSettings] = useState(DEFAULT_PRINT_SETTINGS);
+  const [gramsInput, setGramsInput] = useState("");
+  const [printSettings, setPrintSettings] = useState({ ...DEFAULT_PRINT_SETTINGS, hours: "" });
   const [priority, setPriority] = useState("Normal");
   const [detail, setDetail] = useState("");
   const [projectName, setProjectName] = useState("");
@@ -130,12 +128,6 @@ function CotizarPage() {
   const needsDesign = !hasFileFlow && !linkedDesign.data;
   const estimate = materialEstimate(effectiveMaterial, grams, quantity);
   const printing = printEstimate(effectiveMaterial, grams, quantity, printSettings);
-  const mechanical =
-    requirement === "Debe soportar peso" || requirement === "Debe resistir golpes"
-      ? "Sí"
-      : requirement === "No estoy seguro"
-        ? "No estoy seguro"
-        : "No";
 
   const progress = Math.round(((step + 1) / STEPS.length) * 100);
 
@@ -156,8 +148,10 @@ function CotizarPage() {
       setSubmitError("Inicia sesión para guardar tu cotización.");
       return;
     }
-    if (!printing) {
-      setSubmitError("Revisa el peso, el tiempo y los costos en el paso Fabricación.");
+    if (!(hasFileFlow ? file : refFile) && !linkedDesign.data && detail.trim().length < 20) {
+      setSubmitError(
+        "Cuéntanos qué necesitas en el paso Tu idea (al menos 20 caracteres). No necesitas adjuntar archivos ni conocer datos técnicos.",
+      );
       return;
     }
     if (
@@ -197,11 +191,12 @@ function CotizarPage() {
           // Referencia del cliente; el precio aprobado sigue siendo exclusivo del equipo.
           materialEstimate: {
             gramsPerPiece: estimate?.grams ?? null,
-            assumedWeight: !weightEdited,
+            assumedWeight: false,
             needsDesign,
           },
           printing: {
             ...printSettings,
+            hours: printSettings.hours.trim() ? Number(printSettings.hours) || null : null,
             printer: printing?.profile.id ?? printSettings.printer,
             effectiveWatts: printing?.watts ?? null,
           },
@@ -247,7 +242,7 @@ function CotizarPage() {
       <SectionHeading
         eyebrow="Cotizar"
         title="Cotizar mi pieza"
-        text="Cinco pasos guiados. No necesitas saber de impresión 3D."
+        text="Empieza con una idea, una foto o un boceto. Te guiamos sin pedirte conocimientos de impresión 3D."
       />
 
       {linkedDesign.data && (
@@ -338,7 +333,7 @@ function CotizarPage() {
 
                 <Field
                   label="¿Qué necesita hacer la pieza?"
-                  hint="Con esto te recomendamos el material. Del resto nos encargamos nosotros."
+                  hint="Si no sabes qué elegir, marca «No estoy seguro» y te ayudamos."
                 >
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                     {REQUIREMENTS.map((r) => (
@@ -396,15 +391,22 @@ function CotizarPage() {
                     ) : null}
 
                     <Field
-                      label="Confirma las dimensiones aproximadas de tu pieza"
-                      hint="Los archivos STL no siempre incluyen unidades, así que esto evita errores."
+                      label="Medidas aproximadas (opcional)"
+                      hint="Si las conoces, escribe largo, ancho y alto. También puedes dejarlas en blanco."
                     >
                       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                         {(["x", "y", "z"] as const).map((axis) => (
                           <input
                             key={axis}
                             className={inputClass}
-                            placeholder={axis.toUpperCase()}
+                            aria-label={
+                              axis === "x"
+                                ? "Largo aproximado"
+                                : axis === "y"
+                                  ? "Ancho aproximado"
+                                  : "Alto aproximado"
+                            }
+                            placeholder={axis === "x" ? "Largo" : axis === "y" ? "Ancho" : "Alto"}
                             inputMode="decimal"
                             disabled={dims.unsure}
                             value={dims[axis]}
@@ -439,8 +441,8 @@ function CotizarPage() {
                         Sin archivo 3D no hay problema.
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Continuamos con asesoría: envíanos una foto, boceto o referencia y seguimos
-                        con tu cotización sin salir de este flujo.
+                        Cuéntanos qué quieres crear y para qué lo usarás. Nosotros te ayudamos con
+                        el diseño, las medidas y el material. La foto o el boceto son opcionales.
                       </p>
                     </div>
 
@@ -450,7 +452,7 @@ function CotizarPage() {
                     >
                       <ImageIcon className="mx-auto size-6 text-accent" />
                       <p className="mt-3 text-sm font-medium text-foreground">
-                        Sube una foto, boceto o documento
+                        Añadir una foto o boceto (opcional)
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
                         JPG · PNG · PDF · archivos CAD
@@ -467,18 +469,21 @@ function CotizarPage() {
                     {refFile ? (
                       <UploadRow upload={refFile} onRemove={() => setRefFile(null)} badge="REF" />
                     ) : null}
-
-                    <Field label="Explícanos qué necesitas">
-                      <textarea
-                        rows={5}
-                        className={inputClass}
-                        placeholder="Necesito una pieza que sostenga un sensor dentro de una caja…"
-                        value={detail}
-                        onChange={(e) => setDetail(e.target.value)}
-                      />
-                    </Field>
                   </>
                 )}
+                <Field
+                  label="Cuéntanos qué te gustaría crear"
+                  hint="Por ejemplo: un soporte para poner mi celular sobre el escritorio. No necesitas usar palabras técnicas."
+                >
+                  <textarea
+                    rows={5}
+                    className={inputClass}
+                    aria-label="Descripción de tu idea"
+                    placeholder="Me gustaría una pieza que… La usaría para…"
+                    value={detail}
+                    onChange={(e) => setDetail(e.target.value)}
+                  />
+                </Field>
               </div>
             ) : null}
 
@@ -508,26 +513,30 @@ function CotizarPage() {
                     </span>
                     <span>
                       <span className="block text-sm font-semibold text-foreground">
-                        Recomiéndame un material
+                        Que ProtoLab elija el material
                       </span>
                       <span className="mt-1 block text-xs text-muted-foreground">
-                        No necesitas saber de materiales. Según tu respuesta sugerimos{" "}
-                        <span className="text-accent">{recommendation.code}</span>:{" "}
-                        {recommendation.why}
+                        Tú nos dices para qué usarás la pieza. Nosotros elegimos una opción adecuada
+                        y la confirmamos contigo.
                       </span>
                     </span>
                   </button>
-                  <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    {MATERIAL_LIST.map((m) => (
-                      <PillOption
-                        key={m.code}
-                        selected={material === m.code}
-                        onClick={() => setMaterial(m.code)}
-                      >
-                        {m.code}
-                      </PillOption>
-                    ))}
-                  </div>
+                  <details className="mt-3">
+                    <summary className="cursor-pointer text-sm text-accent">
+                      Quiero elegir un material (opcional)
+                    </summary>
+                    <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {MATERIAL_LIST.map((m) => (
+                        <PillOption
+                          key={m.code}
+                          selected={material === m.code}
+                          onClick={() => setMaterial(m.code)}
+                        >
+                          {m.code}
+                        </PillOption>
+                      ))}
+                    </div>
+                  </details>
                 </Field>
 
                 <div className="grid gap-6 sm:grid-cols-2">
@@ -569,25 +578,6 @@ function CotizarPage() {
                   </Field>
                 </div>
 
-                <Field
-                  label="Peso estimado por pieza (g)"
-                  hint="Usa los gramos del laminador si los conoces, incluyendo soportes. Por ahora usamos 50 g como referencia; no se calcula a partir del archivo."
-                >
-                  <input
-                    aria-label="Peso estimado por pieza en gramos"
-                    type="number"
-                    min="0.1"
-                    max="50000"
-                    step="0.1"
-                    className={inputClass}
-                    value={gramsInput}
-                    onChange={(e) => {
-                      setGramsInput(e.target.value);
-                      setWeightEdited(true);
-                    }}
-                  />
-                </Field>
-
                 <Field label="Color" hint="Si no importa, lo elegimos según disponibilidad.">
                   <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
                     {COLORS.map((c) => (
@@ -597,11 +587,40 @@ function CotizarPage() {
                     ))}
                   </div>
                 </Field>
-                <PrintCostControls
-                  value={printSettings}
-                  onChange={setPrintSettings}
-                  material={effectiveMaterial}
-                />
+                <div className="rounded-2xl border border-accent/20 bg-accent/5 p-5">
+                  <p className="font-semibold">¿No sabes el peso, las medidas o el material?</p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Está bien. Puedes continuar y nosotros lo definimos al revisar tu idea.
+                  </p>
+                </div>
+                <details className="rounded-2xl border border-border p-5">
+                  <summary className="cursor-pointer text-sm font-semibold text-accent">
+                    Ya conozco datos de impresión (opcional)
+                  </summary>
+                  <div className="mt-5 space-y-5">
+                    <Field
+                      label="Peso por pieza en gramos (opcional)"
+                      hint="Solo si ya conoces el consumo de material. Si no, déjalo vacío."
+                    >
+                      <input
+                        aria-label="Peso opcional por pieza en gramos"
+                        type="number"
+                        min="0.1"
+                        max="50000"
+                        step="0.1"
+                        className={inputClass}
+                        value={gramsInput}
+                        placeholder="No lo sé"
+                        onChange={(e) => setGramsInput(e.target.value)}
+                      />
+                    </Field>
+                    <PrintCostControls
+                      value={printSettings}
+                      onChange={setPrintSettings}
+                      material={effectiveMaterial}
+                    />
+                  </div>
+                </details>
               </div>
             ) : null}
 
@@ -683,12 +702,9 @@ function CotizarPage() {
                           : `${dims.x} × ${dims.y} × ${dims.z} ${dims.unit}`
                         : "Por definir en asesoría",
                     ],
-                    ["Tecnología", TECHNOLOGY],
                     [
                       "Material",
-                      material === "auto"
-                        ? `${effectiveMaterial} (recomendado)`
-                        : effectiveMaterial,
+                      material === "auto" ? "ProtoLab me recomienda" : effectiveMaterial,
                     ],
                     ["Color", color],
                     ["Cantidad", `${quantity} ${quantity === 1 ? "pieza" : "piezas"}`],
@@ -711,11 +727,11 @@ function CotizarPage() {
                     grams={grams}
                     quantity={quantity}
                     needsDesign={needsDesign}
-                    assumed={!weightEdited}
+                    priceAvailable={Boolean(printing)}
                     settings={printSettings}
                   />
                   <p className="mt-2 text-xs text-muted-foreground">
-                    Confirmaremos el consumo de material y la cotización completa antes de fabricar.
+                    Revisaremos tu solicitud y confirmaremos el precio antes de fabricar.
                   </p>
                   <div className="mt-4 border-t border-border/60 pt-3 text-xs">
                     <p className="text-muted-foreground">Tiempo estimado</p>
@@ -739,7 +755,7 @@ function CotizarPage() {
                     disabled={submitting || !member.data?.user}
                     onClick={submit}
                   >
-                    {submitting ? "Guardando solicitud…" : "Enviar solicitud de cotización"}
+                    {submitting ? "Guardando solicitud…" : "Solicitar mi cotización"}
                   </Button>
                 </GlassCard>
               </div>
@@ -764,7 +780,7 @@ function CotizarPage() {
           </div>
         </GlassCard>
 
-        <div className="order-first lg:order-none">
+        <div className="min-w-0">
           <div className="lg:sticky lg:top-24">
             <PieceVisual
               compact={step < 4}
@@ -773,7 +789,7 @@ function CotizarPage() {
               label={
                 step === 4
                   ? "Tu proyecto está listo para cotizar."
-                  : `Material actual: ${effectiveMaterial}`
+                  : "De tu idea a una pieza. Te acompañamos en cada paso."
               }
             />
             {step < 4 && (
@@ -783,7 +799,7 @@ function CotizarPage() {
                   grams={grams}
                   quantity={quantity}
                   needsDesign={needsDesign}
-                  assumed={!weightEdited}
+                  priceAvailable={Boolean(printing)}
                   settings={printSettings}
                 />
               </div>

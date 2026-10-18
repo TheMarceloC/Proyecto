@@ -190,7 +190,10 @@ function AdminContent() {
                     {o.client_name} · {o.email} · {o.phone} · {o.city}
                   </p>
                   <p className="mt-3 text-sm">
-                    {o.material} · {o.quantity} piezas · {o.priority}
+                    {o.specifications["materialSelection"] === "auto"
+                      ? "Material por recomendar"
+                      : o.material}{" "}
+                    · {o.quantity} piezas · {o.priority}
                   </p>
                   <p className="mt-3 whitespace-pre-wrap text-sm text-muted-foreground">
                     {o.detail}

@@ -22,6 +22,7 @@ test("API: archivos privados, regla de aportación y límites de autorización",
     staff: { id: staff, email: "staff@example.com" },
   };
   let signed = 0;
+  let receivedQuote;
   const call = (path, token, body, origin = "https://protolab.test") =>
     server.fetch(
       new Request("https://protolab.test/api/" + path, {
@@ -60,6 +61,10 @@ test("API: archivos privados, regla de aportación y límites de autorización",
           : new Response(JSON.stringify({ message: "invalid token" }), { status: 401 });
       if (url.pathname === "/rest/v1/profiles")
         return json({ display_name: token, is_admin: token === "staff" });
+      if (url.pathname === "/rest/v1/quotes") {
+        receivedQuote = JSON.parse(init.body);
+        return json({ id: "55555555-5555-4555-8555-555555555555", code: "PL-IDEA-TEST" });
+      }
       if (url.pathname === "/rest/v1/designs") {
         let rows;
         if (url.searchParams.has("owner_id"))
@@ -142,6 +147,35 @@ test("API: archivos privados, regla de aportación y límites de autorización",
       400,
       "No se aceptan solicitudes incompletas",
     );
+    const ideaResponse = await call("quotes", "bob", {
+      project: "Soporte para mi celular",
+      material: "PETG",
+      quantity: 1,
+      priority: "Normal",
+      client_name: "Bob",
+      email: "bob@example.com",
+      phone: "99999999",
+      city: "San Pedro Sula",
+      detail: "Me gustaría un soporte para poner mi celular sobre el escritorio.",
+      file_path: null,
+      design_id: null,
+      specifications: {
+        start: "idea",
+        materialSelection: "auto",
+        materialEstimate: { gramsPerPiece: null, assumedWeight: false },
+        printing: { hours: null },
+      },
+    });
+    assert.equal(
+      ideaResponse.status,
+      201,
+      "Una idea se puede cotizar sin archivo, peso ni tiempo de impresión",
+    );
+    assert.equal((await ideaResponse.json()).code, "PL-IDEA-TEST");
+    assert.equal(receivedQuote.file_path, null);
+    assert.equal(receivedQuote.specifications.materialEstimate.gramsPerPiece, null);
+    assert.equal(receivedQuote.specifications.printing.hours, null);
+    assert.equal(receivedQuote.price, undefined, "La solicitud no inventa un precio aprobado");
   } finally {
     globalThis.fetch = originalFetch;
     for (const name of names) {

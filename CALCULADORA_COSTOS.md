@@ -66,6 +66,24 @@ valores al cambiar la estructura tarifaria.
 
 ## Archivos
 
+### Recorrido para principiantes (ajuste vigente)
+
+Los importes ya no se muestran en inicio, servicios, materiales, diseños, panel
+ni seguimiento. Se conservan la gestión de cotizaciones y sus precios en el área
+administrativa. El único precio numérico para el cliente está dentro de `/cotizar`
+y solo aparece si ha facilitado peso y tiempo válidos; se redondea al lempira.
+
+El punto de partida predeterminado es una idea. Se permite enviar una descripción
+sin adjuntos, peso, horas o medidas; el servidor conserva el requisito de una
+descripción suficiente (20 caracteres) cuando no hay archivos ni diseño enlazado.
+Peso y tiempo empiezan vacíos, sin las anteriores referencias de 50 g y 2 horas.
+Los detalles técnicos quedan en un desplegable opcional y se guardan como
+desconocidos cuando no se proporcionan. El material puede quedar a recomendación
+del equipo, marcado por `specifications.materialSelection = auto`.
+
+Sin esos datos, el cotizador ofrece revisión del proyecto y confirmación posterior
+del precio; no bloquea la solicitud ni calcula un importe sobre una pieza imaginada.
+
 ### Presentación al cliente (ajuste posterior)
 
 La interfaz comercial muestra únicamente el precio final estimado redondeado al

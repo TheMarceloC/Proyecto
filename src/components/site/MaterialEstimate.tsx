@@ -6,19 +6,19 @@ export function MaterialEstimate({
   grams,
   quantity,
   needsDesign,
-  assumed = false,
+  priceAvailable = false,
   settings,
 }: {
   material: string;
   grams: number;
   quantity: number;
   needsDesign: boolean;
-  assumed?: boolean;
+  priceAvailable?: boolean;
   settings?: PrintCostSettings;
 }) {
   const estimate = materialEstimate(material, grams, quantity);
   const printing = settings ? printEstimate(material, grams, quantity, settings) : null;
-  const valid = estimate && (!settings || printing);
+  const valid = priceAvailable && estimate && (!settings || printing);
   const total = printing?.total ?? estimate?.total;
   return (
     <div
@@ -26,21 +26,23 @@ export function MaterialEstimate({
       aria-live="polite"
       aria-atomic="true"
     >
-      <p className="label-caps text-accent">Precio final estimado</p>
+      <p className="label-caps text-accent">
+        {valid ? "Precio final estimado" : "Cotización a tu medida"}
+      </p>
       <p className="mt-2 font-display text-4xl font-bold text-foreground">
-        {valid && total !== undefined ? formatCustomerPrice(total) : "Revisa los datos de tu pieza"}
+        {valid && total !== undefined ? formatCustomerPrice(total) : "Lo resolvemos contigo"}
       </p>
       <p className="mt-2 text-sm text-muted-foreground">
-        Total por {quantity} {quantity === 1 ? "pieza" : "piezas"} · {material}
+        {quantity} {quantity === 1 ? "pieza" : "piezas"} · revisión personalizada
       </p>
       {needsDesign && (
-        <p className="mt-3 text-sm font-semibold text-accent">+ consultoría por cotizar</p>
+        <p className="mt-3 text-sm font-semibold text-accent">También te ayudamos a diseñarla.</p>
       )}
       <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-        {assumed || (settings && !settings.timeConfirmed)
-          ? "Usamos un peso o tiempo de referencia. "
-          : ""}
-        Confirmaremos el precio al revisar tu proyecto. Envío aparte.
+        {valid
+          ? "Estimación según los datos que compartiste. "
+          : "Puedes continuar sin saber el peso, el material ni las horas de impresión. "}
+        Te confirmaremos el precio antes de fabricar. Diseño y envío se cotizan según tu proyecto.
       </p>
     </div>
   );

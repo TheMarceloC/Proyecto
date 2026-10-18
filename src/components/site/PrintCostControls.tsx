@@ -14,9 +14,9 @@ export function PrintCostControls({
   return (
     <div className="space-y-5 rounded-2xl border border-brand/25 bg-brand/[0.05] p-5">
       <div>
-        <p className="label-caps text-accent">Datos de impresión</p>
+        <p className="label-caps text-accent">Datos opcionales de impresión</p>
         <p className="mt-2 text-sm text-muted-foreground">
-          Si conoces el tiempo de Bambu Studio, puedes afinar tu estimación.
+          Completa solo lo que conozcas. Si no tienes estos datos, puedes dejarlos vacíos.
         </p>
       </div>
       <Field label="Impresora de referencia">
@@ -40,7 +40,7 @@ export function PrintCostControls({
         )}
       </Field>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Tiempo de impresión (horas)">
+        <Field label="Tiempo de impresión en horas (opcional)">
           <input
             aria-label="Tiempo de impresión en horas"
             type="number"
@@ -49,6 +49,7 @@ export function PrintCostControls({
             step="0.25"
             className={inputClass}
             value={value.hours}
+            placeholder="No lo sé"
             onChange={(e) => onChange({ ...value, hours: e.target.value, timeConfirmed: true })}
           />
         </Field>
@@ -68,8 +69,7 @@ export function PrintCostControls({
       </div>
       {!value.timeConfirmed && (
         <p className="text-xs text-muted-foreground">
-          {value.hours} h {value.timeBasis === "piece" ? "por pieza" : "por lote"} es una referencia
-          editable. Confirmaremos el tiempo al revisar tu archivo.
+          Nosotros confirmaremos el tiempo al revisar tu proyecto. No necesitas calcularlo.
         </p>
       )}
     </div>

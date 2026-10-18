@@ -16,8 +16,6 @@ import { Button, GlassCard } from "@/components/site/ui";
 import soporte from "@/assets/proj-soporte-sensor.jpg";
 import carcasa from "@/assets/proj-carcasa.jpg";
 import engranaje from "@/assets/proj-engranaje.jpg";
-import { formatCustomerPrice } from "@/lib/material-pricing";
-import { DEFAULT_PRINT_SETTINGS, printEstimate } from "@/lib/print-pricing";
 
 // Muestras de presentación, sin autores, archivos ni aprobaciones inventadas.
 const SAMPLE_DESIGNS = [
@@ -25,7 +23,6 @@ const SAMPLE_DESIGNS = [
     title: "Soporte para sensor",
     category: "Electrónica",
     material: "PETG",
-    grams: 35,
     image: soporte,
     description: "Una referencia para montar sensores y organizar un proyecto electrónico.",
   },
@@ -33,7 +30,6 @@ const SAMPLE_DESIGNS = [
     title: "Carcasa para electrónica",
     category: "Organización",
     material: "PLA",
-    grams: 80,
     image: carcasa,
     description: "Inspírate para dar forma a una caja o alojamiento a la medida de tu proyecto.",
   },
@@ -41,7 +37,6 @@ const SAMPLE_DESIGNS = [
     title: "Conjunto de engranajes",
     category: "Mecánica",
     material: "PETG",
-    grams: 50,
     image: engranaje,
     description: "Explora la idea de un mecanismo y solicita una pieza adaptada a tus medidas.",
   },
@@ -245,18 +240,6 @@ function DesignsPage() {
                   <h3 className="mt-3 text-lg font-bold">{sample.title}</h3>
                   <p className="mt-2 flex-1 text-sm text-muted-foreground">{sample.description}</p>
                   <div className="mt-5 border-t border-border pt-4">
-                    <p className="text-lg font-semibold text-accent">
-                      {formatCustomerPrice(
-                        printEstimate(sample.material, sample.grams, 1, DEFAULT_PRINT_SETTINGS)!
-                          .total,
-                      )}{" "}
-                      <span className="text-xs font-normal text-muted-foreground">
-                        precio estimado
-                      </span>
-                    </p>
-                    <p className="mt-1 text-[11px] text-muted-foreground">
-                      Referencia de {sample.grams} g y 2 h · valores ilustrativos
-                    </p>
                     <Link
                       to="/cotizar"
                       search={{ inicio: "idea" }}

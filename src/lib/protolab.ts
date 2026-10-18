@@ -211,7 +211,7 @@ export const FAQS = [
   },
   {
     q: "¿Qué pasa si no tengo un diseño 3D?",
-    a: "No hay problema. Puedes enviarnos una idea, un boceto o una foto de la pieza y te ayudamos a modelarla.",
+    a: "Empieza contándonos tu idea con tus propias palabras. Puedes añadir un boceto o una foto, pero no es obligatorio. Nosotros te ayudamos con el diseño, el material y las medidas; no necesitas saber el peso ni el tiempo de impresión.",
   },
   {
     q: "¿Cuánto tarda una impresión?",
