@@ -34,13 +34,7 @@ import { PieceVisual } from "@/components/site/PieceVisual";
 import { MaterialEstimate } from "@/components/site/MaterialEstimate";
 import { PrintCostControls } from "@/components/site/PrintCostControls";
 import { DEFAULT_PRINT_SETTINGS, printEstimate } from "@/lib/print-pricing";
-import {
-  DEFAULT_GRAMS,
-  materialEstimate,
-  formatMaterialRate,
-  MATERIAL_PRICES,
-  type PricedMaterial,
-} from "@/lib/material-pricing";
+import { DEFAULT_GRAMS, materialEstimate } from "@/lib/material-pricing";
 import {
   MATERIALS as MATERIAL_LIST,
   REQUIREMENTS,
@@ -530,12 +524,7 @@ function CotizarPage() {
                         selected={material === m.code}
                         onClick={() => setMaterial(m.code)}
                       >
-                        <span>
-                          {m.code}
-                          <span className="block text-[10px] opacity-80">
-                            {formatMaterialRate(MATERIAL_PRICES[m.code as PricedMaterial])}/g
-                          </span>
-                        </span>
+                        {m.code}
                       </PillOption>
                     ))}
                   </div>

@@ -223,7 +223,7 @@ export const FAQS = [
   },
   {
     q: "¿Cómo se calcula el precio?",
-    a: "Aplicamos un factor de 1.75 al costo del material consumido y sumamos electricidad según la impresora, las horas y la tarifa ENEE elegida. Puedes incluir máquina, mantenimiento, trabajo manual y otros costos en el ajuste del cálculo. Si necesitas diseño, se suma consultoría por cotizar. Envío y condiciones finales se confirman antes de fabricar.",
+    a: "Verás un precio final estimado para tu pedido según el material, la cantidad y las características de la pieza. Lo confirmamos al revisar tu proyecto. Si necesitas diseño, se cotiza la consultoría por separado; el envío también se acuerda aparte.",
   },
   {
     q: "¿Puedo pedir una sola pieza?",

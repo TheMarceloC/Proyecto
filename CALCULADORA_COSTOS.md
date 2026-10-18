@@ -66,6 +66,18 @@ valores al cambiar la estructura tarifaria.
 
 ## Archivos
 
+### Presentación al cliente (ajuste posterior)
+
+La interfaz comercial muestra únicamente el precio final estimado redondeado al
+lempira más cercano, y consultoría/envío por separado. El cálculo conserva centavos
+internamente. Se retiraron el desglose, los porcentajes, las tarifas por gramo y los
+controles públicos de electricidad, máquina, mano de obra y extras. Los controles
+del cliente solo permiten indicar material, cantidad, peso, tiempo e impresora.
+La FAQ tampoco revela la fórmula comercial. Las muestras y materiales muestran
+precios completos con la referencia inicial de tiempo, sin desglosar su composición.
+Los parámetros internos siguen definidos en el módulo de cálculo; esto es un
+ajuste de presentación, no un mecanismo de secreto del código entregado al navegador.
+
 - `src/lib/material-pricing.ts`: costos del usuario y factor 1.75.
 - `src/lib/print-pricing.ts`: energía y demás costos, referencias de perfiles/tarifas.
 - `src/components/site/PrintCostControls.tsx`: parámetros editables en Fabricación.

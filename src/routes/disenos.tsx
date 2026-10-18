@@ -16,7 +16,8 @@ import { Button, GlassCard } from "@/components/site/ui";
 import soporte from "@/assets/proj-soporte-sensor.jpg";
 import carcasa from "@/assets/proj-carcasa.jpg";
 import engranaje from "@/assets/proj-engranaje.jpg";
-import { materialEstimate, formatLempiras } from "@/lib/material-pricing";
+import { formatCustomerPrice } from "@/lib/material-pricing";
+import { DEFAULT_PRINT_SETTINGS, printEstimate } from "@/lib/print-pricing";
 
 // Muestras de presentación, sin autores, archivos ni aprobaciones inventadas.
 const SAMPLE_DESIGNS = [
@@ -245,13 +246,16 @@ function DesignsPage() {
                   <p className="mt-2 flex-1 text-sm text-muted-foreground">{sample.description}</p>
                   <div className="mt-5 border-t border-border pt-4">
                     <p className="text-lg font-semibold text-accent">
-                      ≈ {formatLempiras(materialEstimate(sample.material, sample.grams)!.total)}{" "}
+                      {formatCustomerPrice(
+                        printEstimate(sample.material, sample.grams, 1, DEFAULT_PRINT_SETTINGS)!
+                          .total,
+                      )}{" "}
                       <span className="text-xs font-normal text-muted-foreground">
-                        material con recargo
+                        precio estimado
                       </span>
                     </p>
                     <p className="mt-1 text-[11px] text-muted-foreground">
-                      Referencia de {sample.grams} g · peso ilustrativo
+                      Referencia de {sample.grams} g y 2 h · valores ilustrativos
                     </p>
                     <Link
                       to="/cotizar"

@@ -12,6 +12,9 @@ export type PricedMaterial = keyof typeof MATERIAL_PRICES;
 export const DEFAULT_GRAMS = 50;
 export const formatLempiras = (amount: number) =>
   `L ${amount.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+// Presentación al cliente: el cálculo interno conserva su precisión.
+export const formatCustomerPrice = (amount: number) =>
+  `L ${Math.round(amount).toLocaleString("es-HN", { maximumFractionDigits: 0 })}`;
 export const formatMaterialRate = (amount: number) =>
   `L ${amount.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 5 })}`;
 export function materialEstimate(material: string, grams: number, quantity = 1) {

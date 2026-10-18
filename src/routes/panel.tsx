@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { formatCustomerPrice } from "@/lib/material-pricing";
 import { useQuery } from "@tanstack/react-query";
 import { Plus, Upload } from "lucide-react";
 import { MemberGate } from "@/components/community/Account";
@@ -74,7 +75,7 @@ function Projects() {
               </p>
               <div className="mt-5 flex items-center justify-between">
                 <p className="text-sm">
-                  {o.price === null ? "Precio por confirmar" : "L " + Number(o.price).toFixed(2)}
+                  {o.price === null ? "Precio por confirmar" : formatCustomerPrice(Number(o.price))}
                 </p>
                 <Link
                   to="/seguimiento"

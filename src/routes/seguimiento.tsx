@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { formatCustomerPrice } from "@/lib/material-pricing";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Search } from "lucide-react";
@@ -125,7 +126,9 @@ function TrackingContent() {
                   ["Prioridad", order.priority],
                   [
                     "Cotización",
-                    order.price === null ? "Por confirmar" : "L " + Number(order.price).toFixed(2),
+                    order.price === null
+                      ? "Por confirmar"
+                      : formatCustomerPrice(Number(order.price)),
                   ],
                   ["Entrega", order.estimated_delivery || "Por confirmar"],
                 ].map(([key, value]) => (

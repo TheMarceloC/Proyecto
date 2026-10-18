@@ -4,6 +4,27 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import server from "../.vercel/output/functions/__server.func/index.mjs";
 
+test("las páginas comerciales muestran precios enteros y no revelan el cálculo interno", async () => {
+  for (const route of ["/", "/cotizar", "/disenos", "/servicios", "/materiales", "/faq"]) {
+    const response = await server.fetch(new Request("http://localhost" + route), {
+      waitUntil() {},
+    });
+    assert.equal(response.status, 200);
+    const html = await response.text();
+    const visible = html
+      .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "")
+      .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, "")
+      .replace(/<[^>]+>/g, "");
+    assert.doesNotMatch(
+      visible,
+      /recargo|margen|factor de 1\.75|costo del material consumido|ajustar electricidad/i,
+      route,
+    );
+    assert.doesNotMatch(visible, /L\s+[\d,]+\.\d/, route + " no debe mostrar centavos");
+    if (route === "/cotizar") assert.match(visible, /Precio final estimadoL 31/);
+  }
+});
+
 test("las muestras y sus imágenes se entregan en el HTML inicial sin esperar al catálogo remoto", async () => {
   const response = await server.fetch(new Request("http://localhost/disenos"), { waitUntil() {} });
   assert.equal(response.status, 200);
