@@ -60,7 +60,11 @@ Contribución del pedido = precio cobrado - costos variables del pedido
 Resultado del período = contribución total - costos fijos del período
 ```
 
-No se usa un margen, una tarifa por hora o un precio por gramo sin medirlos.
+La web muestra ahora una referencia provisional solo de materiales, con bases
+por gramo y procedencia documentadas en [PRECIOS_MATERIALES.md](PRECIOS_MATERIALES.md).
+No representa el precio comercial completo ni los costos reales del inventario.
+La consultoría se cotiza aparte cuando hace falta desarrollar el diseño.
+No se usa un margen o una tarifa por hora sin medirlos.
 Si se fija un margen objetivo sobre ventas m, con 0 <= m < 1, el cálculo básico
 para los costos incluidos es Precio = Costo / (1 - m), antes de impuestos
 y de cargos porcentuales que requieran incorporarse al denominador.

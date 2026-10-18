@@ -16,6 +16,35 @@ import { Button, GlassCard } from "@/components/site/ui";
 import soporte from "@/assets/proj-soporte-sensor.jpg";
 import carcasa from "@/assets/proj-carcasa.jpg";
 import engranaje from "@/assets/proj-engranaje.jpg";
+import { materialEstimate, formatLempiras } from "@/lib/material-pricing";
+
+// Muestras de presentación, sin autores, archivos ni aprobaciones inventadas.
+const SAMPLE_DESIGNS = [
+  {
+    title: "Soporte para sensor",
+    category: "Electrónica",
+    material: "PETG",
+    grams: 35,
+    image: soporte,
+    description: "Una referencia para montar sensores y organizar un proyecto electrónico.",
+  },
+  {
+    title: "Carcasa para electrónica",
+    category: "Organización",
+    material: "PLA",
+    grams: 80,
+    image: carcasa,
+    description: "Inspírate para dar forma a una caja o alojamiento a la medida de tu proyecto.",
+  },
+  {
+    title: "Conjunto de engranajes",
+    category: "Mecánica",
+    material: "PETG",
+    grams: 50,
+    image: engranaje,
+    description: "Explora la idea de un mecanismo y solicita una pieza adaptada a tus medidas.",
+  },
+];
 export const Route = createFileRoute("/disenos")({
   head: () => ({
     meta: [
@@ -38,6 +67,12 @@ function DesignsPage() {
   const member = useMember();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("Todos");
+  const showSamples = !designs.isPending && !designs.isError && designs.data?.length === 0;
+  const samples = SAMPLE_DESIGNS.filter(
+    (d) =>
+      (category === "Todos" || d.category === category) &&
+      [d.title, d.description, d.material].join(" ").toLowerCase().includes(search.toLowerCase()),
+  );
   const filtered = (designs.data || []).filter(
     (d) =>
       (category === "Todos" || d.category === category) &&
@@ -99,7 +134,7 @@ function DesignsPage() {
         </div>
         <p className="flex items-center gap-2 text-xs text-muted-foreground">
           <SlidersHorizontal className="size-4" />
-          Publicaciones revisadas por ProtoLab
+          {showSamples ? "Vista previa de la colección" : "Publicaciones revisadas por ProtoLab"}
         </p>
       </div>
       <div className="mt-5 flex flex-wrap gap-2" aria-label="Categorías">
@@ -123,7 +158,11 @@ function DesignsPage() {
       <div className="mt-9 flex items-center justify-between">
         <h2 className="text-xl font-bold">Explora la colección</h2>
         <span className="text-xs text-muted-foreground">
-          {designs.data ? filtered.length + " diseños" : ""}
+          {showSamples
+            ? samples.length + (samples.length === 1 ? " muestra" : " muestras")
+            : designs.data
+              ? filtered.length + " diseños"
+              : ""}
         </span>
       </div>
       {designs.isPending ? (
@@ -139,6 +178,57 @@ function DesignsPage() {
             Volver a cargar
           </Button>
         </GlassCard>
+      ) : showSamples && samples.length ? (
+        <>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Diseños de muestra para inspirarte. Las publicaciones de la comunidad aparecerán aquí al
+            aprobarse; estas muestras no incluyen archivos descargables.
+          </p>
+          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {samples.map((sample) => (
+              <GlassCard
+                key={sample.title}
+                className="group flex h-full flex-col overflow-hidden transition hover:-translate-y-1 hover:border-accent/40"
+              >
+                <div className="relative overflow-hidden">
+                  <img
+                    src={sample.image}
+                    alt={sample.title}
+                    className="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                  <span className="absolute left-4 top-4 rounded-full border border-white/15 bg-background/85 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider">
+                    Diseño de muestra
+                  </span>
+                </div>
+                <div className="flex flex-1 flex-col p-5">
+                  <div className="flex justify-between text-[11px] uppercase tracking-wider text-muted-foreground">
+                    <span>{sample.category}</span>
+                    <span>{sample.material}</span>
+                  </div>
+                  <h3 className="mt-3 text-lg font-bold">{sample.title}</h3>
+                  <p className="mt-2 flex-1 text-sm text-muted-foreground">{sample.description}</p>
+                  <div className="mt-5 border-t border-border pt-4">
+                    <p className="text-lg font-semibold text-accent">
+                      ≈ {formatLempiras(materialEstimate(sample.material, sample.grams)!.total)}{" "}
+                      <span className="text-xs font-normal text-muted-foreground">en material</span>
+                    </p>
+                    <p className="mt-1 text-[11px] text-muted-foreground">
+                      Referencia de {sample.grams} g · peso ilustrativo
+                    </p>
+                    <Link
+                      to="/cotizar"
+                      search={{ inicio: "idea" }}
+                      className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-accent"
+                    >
+                      Cotizar una pieza similar <ArrowUpRight className="size-4" />
+                    </Link>
+                  </div>
+                </div>
+              </GlassCard>
+            ))}
+          </div>
+        </>
       ) : filtered.length ? (
         <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((design) => (

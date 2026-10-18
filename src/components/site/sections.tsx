@@ -20,6 +20,7 @@ import {
 import soporte from "@/assets/proj-soporte-sensor.jpg";
 import carcasa from "@/assets/proj-carcasa.jpg";
 import engranaje from "@/assets/proj-engranaje.jpg";
+import { MATERIAL_PRICES, formatLempiras, type PricedMaterial } from "@/lib/material-pricing";
 import {
   AUDIENCES,
   HOME_STEPS,
@@ -269,6 +270,13 @@ export function MaterialsSection() {
         {MATERIALS.map((m) => (
           <GlassCard key={m.code} className="p-6 transition hover:border-accent/30">
             <span className="font-display text-xl font-bold text-foreground">{m.code}</span>
+            <p className="mt-3 text-2xl font-bold text-accent">
+              {formatLempiras(MATERIAL_PRICES[m.code as PricedMaterial])}
+              <span className="ml-1 text-xs font-normal text-muted-foreground">/ g</span>
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              50 g ≈ {formatLempiras(MATERIAL_PRICES[m.code as PricedMaterial] * 50)} en material
+            </p>
             <p className="mt-3 text-xs text-muted-foreground">Ideal para:</p>
             <p className="mt-1 text-sm leading-relaxed text-foreground">{m.ideal}</p>
             <div className="mt-5">
@@ -277,6 +285,10 @@ export function MaterialsSection() {
           </GlassCard>
         ))}
       </div>
+      <p className="mt-5 text-sm text-muted-foreground">
+        Bases orientativas de material. Fabricación y envío se confirman aparte. ¿Necesitas
+        modelado? Materiales + consultoría por cotizar.
+      </p>
       <div className="mt-8 flex flex-wrap gap-3">
         <ActionLink to="/asesoria" variant="ghost">
           No sé cuál elegir <ArrowRight className="size-4" />

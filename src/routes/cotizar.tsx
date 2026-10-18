@@ -31,6 +31,14 @@ import {
   btnStyles,
 } from "@/components/site/ui";
 import { PieceVisual } from "@/components/site/PieceVisual";
+import { MaterialEstimate } from "@/components/site/MaterialEstimate";
+import {
+  DEFAULT_GRAMS,
+  materialEstimate,
+  formatLempiras,
+  MATERIAL_PRICES,
+  type PricedMaterial,
+} from "@/lib/material-pricing";
 import {
   MATERIALS as MATERIAL_LIST,
   REQUIREMENTS,
@@ -107,6 +115,8 @@ function CotizarPage() {
   const [material, setMaterial] = useState<string>("auto");
   const [color, setColor] = useState("No importa");
   const [quantity, setQuantity] = useState(1);
+  const [gramsInput, setGramsInput] = useState(String(DEFAULT_GRAMS));
+  const [weightEdited, setWeightEdited] = useState(false);
   const [priority, setPriority] = useState("Normal");
   const [detail, setDetail] = useState("");
   const [projectName, setProjectName] = useState("");
@@ -119,6 +129,9 @@ function CotizarPage() {
   const hasFileFlow = start === "archivo";
   const recommendation = recommendMaterial(requirement);
   const effectiveMaterial = material === "auto" ? recommendation.code : material;
+  const grams = Number(gramsInput);
+  const needsDesign = !hasFileFlow && !linkedDesign.data;
+  const estimate = materialEstimate(effectiveMaterial, grams, quantity);
   const mechanical =
     requirement === "Debe soportar peso" || requirement === "Debe resistir golpes"
       ? "Sí"
@@ -179,6 +192,12 @@ function CotizarPage() {
           color,
           delivery,
           materialSelection: material,
+          // Referencia del cliente; el precio aprobado sigue siendo exclusivo del equipo.
+          materialEstimate: {
+            gramsPerPiece: estimate?.grams ?? null,
+            assumedWeight: !weightEdited,
+            needsDesign,
+          },
         },
       });
       setCode(result.code);
@@ -498,7 +517,12 @@ function CotizarPage() {
                         selected={material === m.code}
                         onClick={() => setMaterial(m.code)}
                       >
-                        {m.code}
+                        <span>
+                          {m.code}
+                          <span className="block text-[10px] opacity-80">
+                            {formatLempiras(MATERIAL_PRICES[m.code as PricedMaterial])}/g
+                          </span>
+                        </span>
                       </PillOption>
                     ))}
                   </div>
@@ -522,7 +546,7 @@ function CotizarPage() {
                         type="button"
                         aria-label="Más"
                         className="px-4 py-3 text-muted-foreground hover:text-foreground"
-                        onClick={() => setQuantity((q) => q + 1)}
+                        onClick={() => setQuantity((q) => Math.min(1000, q + 1))}
                       >
                         +
                       </button>
@@ -542,6 +566,25 @@ function CotizarPage() {
                     </div>
                   </Field>
                 </div>
+
+                <Field
+                  label="Peso estimado por pieza (g)"
+                  hint="Usa los gramos del laminador si los conoces, incluyendo soportes. Por ahora usamos 50 g como referencia; no se calcula a partir del archivo."
+                >
+                  <input
+                    aria-label="Peso estimado por pieza en gramos"
+                    type="number"
+                    min="0.1"
+                    max="50000"
+                    step="0.1"
+                    className={inputClass}
+                    value={gramsInput}
+                    onChange={(e) => {
+                      setGramsInput(e.target.value);
+                      setWeightEdited(true);
+                    }}
+                  />
+                </Field>
 
                 <Field label="Color" hint="Si no importa, lo elegimos según disponibilidad.">
                   <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
@@ -656,13 +699,15 @@ function CotizarPage() {
                   ))}
                 </div>
                 <GlassCard className="h-max p-5">
-                  <p className="label-caps">Cotización a medida</p>
-                  <p className="mt-2 font-display text-2xl font-bold text-accent">
-                    Revisamos tu pieza.
-                  </p>
+                  <MaterialEstimate
+                    material={effectiveMaterial}
+                    grams={grams}
+                    quantity={quantity}
+                    needsDesign={needsDesign}
+                    assumed={!weightEdited}
+                  />
                   <p className="mt-2 text-xs text-muted-foreground">
-                    El precio final se confirma después de revisar el diseño, material, dimensiones
-                    y características de fabricación.
+                    Confirmaremos el consumo de material y la cotización completa antes de fabricar.
                   </p>
                   <div className="mt-4 border-t border-border/60 pt-3 text-xs">
                     <p className="text-muted-foreground">Tiempo estimado</p>
@@ -722,6 +767,17 @@ function CotizarPage() {
                   : `Material actual: ${effectiveMaterial}`
               }
             />
+            {step < 4 && (
+              <div className="mt-4">
+                <MaterialEstimate
+                  material={effectiveMaterial}
+                  grams={grams}
+                  quantity={quantity}
+                  needsDesign={needsDesign}
+                  assumed={!weightEdited}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

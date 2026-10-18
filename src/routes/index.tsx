@@ -6,6 +6,7 @@ import {
   CtaSection,
   ExamplesPreviewSection,
   HomeStepsSection,
+  MaterialsSection,
   QuickStartSection,
 } from "@/components/site/sections";
 import { PieceVisual } from "@/components/site/PieceVisual";
@@ -122,6 +123,7 @@ function Home() {
       <ExamplesPreviewSection />
       <QuickStartSection />
       <HomeStepsSection />
+      <MaterialsSection />
       <AdviceSection />
       <CtaSection />
     </>

@@ -148,3 +148,15 @@
 @utility animate-step-in {
   animation: step-in 0.35s cubic-bezier(0.32, 0.72, 0, 1) both;
 }
+
+.assembly-part {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  transition: transform 1100ms cubic-bezier(0.22, 0.8, 0.25, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .assembly-part {
+    transition: none;
+  }
+}

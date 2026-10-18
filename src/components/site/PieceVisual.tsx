@@ -1,28 +1,29 @@
-import { useId } from "react";
+import { useId, type CSSProperties } from "react";
+
 const TINT: Record<string, string> = {
   PLA: "var(--accent)",
-  PETG: "var(--brand)",
+  PETG: "#678bff",
   ABS: "#e9ac68",
   TPU: "#d18bea",
 };
-function gearPath(radius: number, teeth: number) {
+const STAGES = [
+  "Base preparada",
+  "Los ejes encajan en la base",
+  "Los engranajes entran en posición",
+  "La tapa cierra el mecanismo",
+  "Tornillos ajustados. Ensamble completo.",
+];
+const PARTS = ["Base", "Ejes", "Engranajes", "Tapa", "Tornillos"];
+
+function gearPath(radius: number, teeth: number, hole: number) {
   const points = Array.from({ length: teeth * 4 }, (_, i) => {
     const a = (i / (teeth * 4)) * Math.PI * 2;
-    const r = i % 4 < 2 ? radius : radius * 0.85;
-    return [Math.cos(a) * r, Math.sin(a) * r];
-  });
-  return (
-    points.map((p, i) => (i ? "L" : "M") + p.join(",")).join(" ") +
-    "Z M -19 0 a 19 19 0 1 0 38 0 a 19 19 0 1 0 -38 0 Z"
-  );
+    const r = i % 4 < 2 ? radius : radius * 0.84;
+    return `${i ? "L" : "M"}${Math.cos(a) * r},${Math.sin(a) * r}`;
+  }).join(" ");
+  return `${points} Z M ${-hole} 0 a ${hole} ${hole} 0 1 0 ${hole * 2} 0 a ${hole} ${hole} 0 1 0 ${-hole * 2} 0 Z`;
 }
-const stages = [
-  "Idea y propósito",
-  "Geometría y referencias",
-  "Material y acabado",
-  "Preparación del proyecto",
-  "Listo para revisión",
-];
+
 export function PieceVisual({
   step,
   material,
@@ -33,162 +34,202 @@ export function PieceVisual({
   label?: string;
 }) {
   const uid = useId().replace(/:/g, "");
-  const progress = (Math.min(4, Math.max(0, step)) + 1) / 5;
+  const stage = Math.min(4, Math.max(0, step));
   const tint = TINT[material] || "var(--accent)";
+  // Cada grupo se desplaza desde la vista explosionada a su posición de encaje.
+  const fit = (at: number, x: number, y: number, angle = 0): CSSProperties => ({
+    transform:
+      stage >= at
+        ? "translate(0px, 0px) rotate(0deg)"
+        : `translate(${x}px, ${y}px) rotate(${angle}deg)`,
+    transitionDelay: stage >= at ? "100ms" : "0ms",
+  });
+  const bolts: [number, number][] = [
+    [-87, -60],
+    [87, -60],
+    [-87, 69],
+    [87, 69],
+  ];
   return (
     <div className="relative overflow-hidden rounded-3xl border border-border bg-[#09101e] p-5">
-      <div className="flex items-center justify-between">
-        <p className="label-caps text-accent">De la idea a la pieza</p>
-        <span className="font-mono text-[10px] text-muted-foreground">
-          0{Math.min(4, step) + 1} / 05
-        </span>
+      <div className="flex items-center justify-between gap-2">
+        <p className="label-caps text-accent">Pieza a pieza</p>
+        <span className="font-mono text-[10px] text-muted-foreground">0{stage + 1} / 05</span>
       </div>
       <svg
-        viewBox="0 0 320 300"
-        className="mx-auto w-full max-w-[330px]"
+        viewBox="0 0 400 405"
+        className="mx-auto w-full max-w-[390px]"
         role="img"
-        aria-label={"Mecanismo de engranajes que se completa: " + stages[step]}
+        aria-label={`Ensamblaje de una caja de engranajes: ${STAGES[stage]}`}
       >
         <defs>
           <linearGradient id={uid + "metal"} x1="0" y1="0" x2="1" y2="1">
-            <stop stopColor="#b9c9ff" />
+            <stop stopColor="#d2e4f3" />
             <stop offset=".4" stopColor={tint} />
-            <stop offset="1" stopColor="#132c48" />
+            <stop offset="1" stopColor="#1a3556" />
           </linearGradient>
-          <linearGradient id={uid + "side"}>
-            <stop stopColor="#182946" />
-            <stop offset="1" stopColor={tint} />
+          <linearGradient id={uid + "case"} x1="0" y1="0" x2="0" y2="1">
+            <stop stopColor="#24415e" />
+            <stop offset="1" stopColor="#0d1c30" />
           </linearGradient>
-          <clipPath id={uid + "build"}>
-            <rect
-              x="0"
-              y={265 - progress * 240}
-              width="320"
-              height={progress * 240}
-              style={{ transition: "y 900ms ease,height 900ms ease" }}
-            />
-          </clipPath>
         </defs>
-        <g stroke="#30445f" opacity=".45" strokeWidth=".6">
-          {Array.from({ length: 10 }, (_, i) => (
-            <g key={i}>
-              <path d={`M${20 + i * 28} 225 L${145 + i * 14} 150`} />
-              <path d={`M20 ${150 + i * 12} L300 ${150 + i * 12}`} />
-            </g>
+        <g stroke="#30445f" opacity=".3" strokeWidth=".6">
+          {Array.from({ length: 9 }, (_, i) => (
+            <path key={i} d={`M25 ${275 + i * 12}H375 M${40 + i * 40} 270L${i * 40 - 30} 390`} />
           ))}
         </g>
-        <ellipse cx="160" cy="235" rx="110" ry="25" fill={tint} opacity=".08" />
-        <g transform="translate(160 164) rotate(-18) scale(1 .64)">
-          <g opacity=".25" fill="none" stroke={tint} strokeWidth="1" strokeDasharray="4 4">
-            <rect x="-107" y="-96" width="214" height="178" rx="22" />
-            <path d={gearPath(68, 16)} />
-            <path transform="translate(73 -75) scale(.49)" d={gearPath(68, 12)} />
-            <path d="M-130 0H130 M0 -130V120" />
+        <ellipse cx="200" cy="328" rx="125" ry="25" fill={tint} opacity=".08" />
+        {stage < 4 && (
+          <g stroke={tint} strokeDasharray="3 6" opacity=".25" fill="none">
+            <path d="M106 130V295 M294 130V295 M200 65V310" />
           </g>
-          <g clipPath={`url(#${uid}build)`} transform="translate(0 0)" />
-        </g>
-        <g clipPath={`url(#${uid}build)`}>
-          <g transform="translate(160 164) rotate(-18) scale(1 .64)">
-            <rect
-              x="-107"
-              y="-78"
-              width="214"
-              height="178"
-              rx="22"
-              fill="#122135"
-              stroke="#365470"
-              strokeWidth="1.5"
-            />
-            <rect
-              x="-107"
-              y="-96"
-              width="214"
-              height="178"
-              rx="22"
-              fill="#182c44"
-              stroke={tint}
-              strokeWidth="1.5"
-            />
-            {[-83, 83].flatMap((x) =>
-              [-73, 59].map((y) => (
-                <g key={x + "_" + y}>
-                  <circle cx={x} cy={y} r="9" fill="#080f1c" stroke="#3d6178" />
-                  <circle cx={x} cy={y} r="4" fill="#658697" />
-                </g>
-              )),
-            )}
-            {Array.from({ length: 9 }, (_, i) => (
-              <path
-                key={i}
-                transform={`translate(0 ${20 - i * 2})`}
-                d={gearPath(68, 16)}
-                fill={`url(#${uid}side)`}
-                fillRule="evenodd"
-                stroke="#183b50"
-                strokeWidth=".7"
-              />
+        )}
+        <g transform="translate(200 278) rotate(-18) scale(1 .62)">
+          <rect x="-112" y="-77" width="224" height="181" rx="24" fill="#0b1828" stroke="#34536f" />
+          <rect
+            x="-112"
+            y="-94"
+            width="224"
+            height="181"
+            rx="24"
+            fill={`url(#${uid}case)`}
+            stroke={tint}
+            strokeWidth="1.5"
+          />
+          <rect x="-99" y="-81" width="198" height="155" rx="18" fill="#0a1625" stroke="#34536f" />
+          {bolts.map(([x, y], i) => (
+            <circle key={i} cx={x} cy={y} r="7" fill="#060e18" stroke="#4b6a83" />
+          ))}
+          <g className="assembly-part" style={fit(1, 0, -150)}>
+            {(
+              [
+                [-27, 7],
+                [59, -25],
+              ] as [number, number][]
+            ).map(([x, y], i) => (
+              <g key={i} transform={`translate(${x} ${y})`}>
+                <ellipse rx="15" ry="12" fill="#294659" stroke="#7291a1" />
+                <path d="M-7 0V-42Q0 -49 7 -42V0" fill={`url(#${uid}metal)`} stroke="#c3d5de" />
+                <ellipse cy="-42" rx="7" ry="4" fill="#c2d6df" />
+              </g>
             ))}
-            <path
-              d={gearPath(68, 16)}
-              fill={`url(#${uid}metal)`}
-              fillRule="evenodd"
-              stroke="#bdd7e2"
-              strokeWidth="1.2"
-            />
-            {[0, 1, 2, 3, 4, 5].map((i) => {
-              const angle = (i * Math.PI) / 3;
-              return (
+          </g>
+          <g className="assembly-part" style={fit(2, -75, -155, -28)}>
+            <g transform="translate(-27 -10)">
+              {[12, 8, 4].map((y) => (
+                <path
+                  key={y}
+                  transform={`translate(0 ${y})`}
+                  d={gearPath(61, 16, 11)}
+                  fill="#19405a"
+                  stroke="#365e78"
+                  fillRule="evenodd"
+                />
+              ))}
+              <path
+                d={gearPath(61, 16, 11)}
+                fill={`url(#${uid}metal)`}
+                stroke="#c2e0eb"
+                fillRule="evenodd"
+              />
+              {Array.from({ length: 6 }, (_, i) => (
                 <circle
                   key={i}
-                  cx={Math.cos(angle) * 43}
-                  cy={Math.sin(angle) * 43}
-                  r="7"
+                  cx={Math.cos((i * Math.PI) / 3) * 37}
+                  cy={Math.sin((i * Math.PI) / 3) * 37}
+                  r="6"
                   fill="#102739"
                   stroke={tint}
                 />
-              );
-            })}
-            <g transform="translate(73 -75) scale(.49)">
-              <path transform="translate(0 14)" d={gearPath(68, 12)} fill="#183c4f" />
-              <path
-                d={gearPath(68, 12)}
-                fill={`url(#${uid}metal)`}
-                fillRule="evenodd"
-                stroke="#b0cad9"
-                strokeWidth="2"
-              />
-              <circle r="12" fill="#13283b" stroke={tint} />
+              ))}
             </g>
-            <circle r="17" fill="#071421" stroke="#bdd8e2" strokeWidth="2" />
-            <circle r="8" fill="#234956" />
-            <path d="M-6 -6L6 6 M6 -6L-6 6" stroke="#a9b9c7" />
+          </g>
+          <g className="assembly-part" style={fit(2, 85, -135, 36)}>
+            <g transform="translate(59 -42) rotate(12)">
+              <path
+                transform="translate(0 10)"
+                d={gearPath(30, 10, 9)}
+                fill="#21415b"
+                stroke="#658195"
+                fillRule="evenodd"
+              />
+              <path
+                d={gearPath(30, 10, 9)}
+                fill={`url(#${uid}metal)`}
+                stroke="#d3e3ec"
+                fillRule="evenodd"
+              />
+            </g>
+          </g>
+          <g className="assembly-part" style={fit(3, 0, -238)}>
+            <path
+              d="M-88 -104H88Q112 -104 112 -80V53Q112 77 88 77H-88Q-112 77 -112 53V-80Q-112 -104 -88 -104Z M-67 -71H67Q84 -71 84 -54V29Q84 46 67 46H-67Q-84 46 -84 29V-54Q-84 -71 -67 -71Z"
+              fill={`url(#${uid}case)`}
+              stroke={tint}
+              strokeWidth="2"
+              fillRule="evenodd"
+            />
+            <rect
+              x="-84"
+              y="-71"
+              width="168"
+              height="117"
+              rx="17"
+              fill={tint}
+              fillOpacity=".045"
+              stroke="#81aebf"
+              strokeOpacity=".5"
+            />
+            <path d="M-68 -59L-12 -59 M-68 -52L-34 -52" stroke="#d2ecf4" opacity=".35" />
+            <text
+              x="0"
+              y="65"
+              fill="#bdd3e3"
+              fontSize="9"
+              textAnchor="middle"
+              fontFamily="monospace"
+            >
+              PROTOLAB
+            </text>
+          </g>
+          <g className="assembly-part" style={fit(4, 0, -285)}>
+            {bolts.map(([x, y], i) => (
+              <g key={i} transform={`translate(${x} ${y - 10})`}>
+                <path d="M-3 -9V-25H3V-9" stroke="#b9cad7" fill="#50697d" />
+                <circle cy="-25" r="7" fill={`url(#${uid}metal)`} stroke="#c5dce9" />
+                <path d="M-3 -28L3 -22 M3 -28L-3 -22" stroke="#12263a" strokeWidth="1.5" />
+              </g>
+            ))}
           </g>
         </g>
-        {step < 4 && (
-          <g
-            style={{
-              transform: `translateY(${265 - progress * 240}px)`,
-              transition: "transform 900ms ease",
-            }}
-          >
-            <path d="M35 0H285" stroke={tint} strokeWidth="1.5" opacity=".8" />
-            <rect x="35" y="-8" width="250" height="18" fill={tint} opacity=".07" />
-          </g>
-        )}
-        <g stroke={tint} strokeWidth=".7" opacity=".5">
-          <path d="M28 65V40H53 M267 40H292V65 M28 240V265H53 M267 265H292V240" />
-        </g>
-        <text x="27" y="285" fill="#8197ac" fontSize="8" fontFamily="monospace">
-          ENSAMBLE · CAPAS · GEOMETRÍA
+        <text
+          x="200"
+          y="385"
+          textAnchor="middle"
+          fill="#8197ac"
+          fontSize="9"
+          fontFamily="monospace"
+        >
+          {stage === 4 ? "ENSAMBLE COMPLETO" : "VISTA EXPLOSIONADA → ENSAMBLE"}
         </text>
       </svg>
-      <div className="h-1 overflow-hidden rounded-full bg-white/10">
-        <div
-          className="h-full rounded-full bg-gradient-to-r from-brand to-accent transition-all duration-700"
-          style={{ width: progress * 100 + "%" }}
-        />
+      <div className="flex gap-1.5" aria-label="Partes ensambladas">
+        {PARTS.map((part, i) => (
+          <div key={part} className="flex-1 text-center">
+            <div
+              className={`h-1 rounded-full transition-colors duration-700 ${i <= stage ? "bg-accent" : "bg-white/10"}`}
+            />
+            <span
+              className={`mt-2 block text-[9px] ${i <= stage ? "text-accent" : "text-muted-foreground"}`}
+            >
+              {part}
+            </span>
+          </div>
+        ))}
       </div>
-      <p className="mt-4 text-sm font-semibold text-foreground">{stages[step]}</p>
+      <p className="mt-4 text-sm font-semibold text-foreground" aria-live="polite">
+        {STAGES[stage]}
+      </p>
       <p className="mt-1 text-xs text-muted-foreground">{label || "Comparte. Diseña. Fabrica."}</p>
     </div>
   );

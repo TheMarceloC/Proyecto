@@ -223,7 +223,7 @@ export const FAQS = [
   },
   {
     q: "¿Cómo se calcula el precio?",
-    a: "Consideramos material, volumen de la pieza, tiempo de máquina, cantidad y prioridad. El equipo revisa el archivo y te envía una cotización antes de fabricar.",
+    a: "Mostramos una estimación de materiales: gramos por pieza × cantidad × precio por gramo. Si necesitas diseño, se suma consultoría por cotizar. La fabricación y el envío se confirman aparte, antes de iniciar el pedido.",
   },
   {
     q: "¿Puedo pedir una sola pieza?",

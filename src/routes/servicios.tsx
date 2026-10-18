@@ -4,6 +4,7 @@ import {
   ServicesSection,
   CtaSection,
   AudienceSection,
+  MaterialsSection,
 } from "@/components/site/sections";
 
 export const Route = createFileRoute("/servicios")({
@@ -35,6 +36,7 @@ function ServiciosPage() {
         cta={{ to: "/cotizar", label: "Cotizar ahora" }}
       />
       <ServicesSection />
+      <MaterialsSection />
       <AudienceSection />
       <CtaSection />
     </>
