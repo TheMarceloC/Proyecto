@@ -3,11 +3,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { MemberGate, useMember } from "@/components/community/Account";
-import { Button, GlassCard, inputClass, Field } from "@/components/site/ui";
+import { Button, GlassCard, inputClass, Field, StatusBadge } from "@/components/site/ui";
 import { PageHeader } from "@/components/site/sections";
-import { api, errorText, type Design, type Quote } from "@/lib/community";
+import { api, errorText, type Design, type Quote, type DesignPurchase } from "@/lib/community";
+import { COMPLEXITIES, PURCHASE_STATUSES, designPrice } from "@/lib/design-commerce";
 import { ORDER_STATUSES } from "@/lib/protolab";
-type AdminDesign = Design & { file_path: string };
+type AdminDesign = Design & { file_path: string; sales_agreement: string };
 type Message = {
   id: string;
   name: string;
@@ -17,7 +18,12 @@ type Message = {
   created_at: string;
   file_path: string | null;
 };
-type AdminData = { designs: AdminDesign[]; quotes: Quote[]; messages: Message[] };
+type AdminData = {
+  designs: AdminDesign[];
+  quotes: Quote[];
+  messages: Message[];
+  purchases: DesignPurchase[];
+};
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [{ title: "Administración — ProtoLab" }, { name: "robots", content: "noindex,nofollow" }],
@@ -57,6 +63,11 @@ function AdminContent() {
       await api(path, body);
       await query.refetch();
       await qc.invalidateQueries({ queryKey: ["member"] });
+      await Promise.all(
+        ["designs", "design", "my-designs", "purchases"].map((key) =>
+          qc.invalidateQueries({ queryKey: [key] }),
+        ),
+      );
       toast.success("Cambio guardado.");
     } catch (error) {
       toast.error(errorText(error));
@@ -97,7 +108,7 @@ function AdminContent() {
         ))}
       </div>
       <div className="my-8 flex gap-2">
-        {["Diseños", "Fabricación", "Mensajes"].map((t) => (
+        {["Diseños", "Compras", "Fabricación", "Mensajes"].map((t) => (
           <Button variant={tab === t ? "primary" : "ghost"} key={t} onClick={() => setTab(t)}>
             {t}
           </Button>
@@ -147,9 +158,60 @@ function AdminContent() {
                     id: d.id,
                     status: action || "rejected",
                     note: data.get("note"),
+                    price: data.get("price") ? Number(data.get("price")) : null,
+                    complexity: data.get("complexity"),
+                    commercial_reviewed: data.get("commercial_reviewed") === "on",
                   });
                 }}
               >
+                <p className="mb-3 text-sm text-muted-foreground">
+                  Trabajo declarado: {d.complexity_notes || "Pendiente"}
+                </p>
+                <div className="mb-4 rounded-xl border border-border p-4 text-sm">
+                  <p className="font-semibold">Condiciones propuestas por el creador</p>
+                  <p className="mt-2 whitespace-pre-wrap text-muted-foreground">
+                    {d.sales_agreement ||
+                      "No hay acuerdo comercial. Solicita una nueva propuesta al creador; no conviertas su licencia anterior."}
+                  </p>
+                </div>
+                <div className="mb-4 grid gap-3 sm:grid-cols-2">
+                  <Field label="Complejidad revisada">
+                    <select
+                      aria-label={"Complejidad de " + d.title}
+                      name="complexity"
+                      defaultValue={d.complexity}
+                      className={inputClass}
+                    >
+                      {Object.entries(COMPLEXITIES).map(([key, value]) => (
+                        <option key={key} value={key}>
+                          {value.label}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                  <Field label="Precio final del archivo (L)">
+                    <input
+                      aria-label={"Precio de " + d.title}
+                      name="price"
+                      type="number"
+                      min="1"
+                      max="1000000"
+                      step="1"
+                      defaultValue={d.price ?? d.proposed_price ?? ""}
+                      className={inputClass}
+                    />
+                  </Field>
+                </div>
+                <label className="mb-4 flex gap-3 text-sm text-muted-foreground">
+                  <input
+                    type="checkbox"
+                    name="commercial_reviewed"
+                    defaultChecked={d.commercial_reviewed}
+                    className="mt-1 accent-teal-400"
+                  />
+                  He confirmado con el creador el precio, permisos y acuerdo comercial, incluida su
+                  compensación. La revisión de publicación no certifica funcionamiento.
+                </label>
                 <textarea
                   aria-label={"Notas para " + d.title}
                   name="note"
@@ -163,7 +225,8 @@ function AdminContent() {
                 />
                 <p className="my-3 text-xs text-muted-foreground">
                   Antes de aprobar, comprueba el archivo, la imagen, la descripción y que la
-                  licencia permita compartir y fabricar.
+                  licencia y el acuerdo permitan vender el archivo y fabricar piezas. Sin
+                  autorización comercial y precio no se puede publicar.
                 </p>
                 <div className="flex gap-3">
                   <Button name="action" value="approved" disabled={busy}>
@@ -174,6 +237,69 @@ function AdminContent() {
                   </Button>
                 </div>
               </form>
+            </GlassCard>
+          ))}
+        </div>
+      )}
+      {tab === "Compras" && (
+        <div className="space-y-5">
+          <p className="text-sm text-muted-foreground">
+            Verifica el pago real antes de habilitar una descarga. Estos controles registran la
+            verificación; no cobran ni reembolsan dinero.
+          </p>
+          {query.data?.purchases.length === 0 && (
+            <p className="text-muted-foreground">Todavía no hay solicitudes de compra.</p>
+          )}
+          {query.data?.purchases.map((p) => (
+            <GlassCard key={p.id} className="p-6">
+              <StatusBadge label={PURCHASE_STATUSES[p.status]} />
+              <h2 className="mt-3 text-xl font-bold">
+                {p.design_title} · {designPrice(p.amount)}
+              </h2>
+              <p className="mt-2 break-all text-xs text-muted-foreground">
+                Compra: {p.id} · Cuenta: {p.owner_id}
+              </p>
+              {p.status !== "revoked" && (
+                <form
+                  className="mt-4 space-y-4"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const data = new FormData(e.currentTarget);
+                    perform("admin/purchase", {
+                      id: p.id,
+                      status: p.status === "pending" ? "paid" : "revoked",
+                      reference: data.get("reference"),
+                    });
+                  }}
+                >
+                  <Field
+                    label={
+                      p.status === "pending"
+                        ? "Referencia bancaria o comprobante verificado"
+                        : "Motivo y referencia de revocación"
+                    }
+                  >
+                    <input
+                      name="reference"
+                      required
+                      minLength={5}
+                      maxLength={200}
+                      className={inputClass}
+                    />
+                  </Field>
+                  <label className="flex gap-3 text-sm text-muted-foreground">
+                    <input type="checkbox" required className="mt-1 accent-teal-400" />
+                    {p.status === "pending"
+                      ? "He comprobado que se recibió el importe completo de esta compra."
+                      : "Confirmo la revocación del acceso y he documentado el motivo."}
+                  </label>
+                  <Button disabled={busy} variant={p.status === "paid" ? "ghost" : "primary"}>
+                    {p.status === "pending"
+                      ? "Confirmar pago y habilitar archivo"
+                      : "Revocar acceso al archivo"}
+                  </Button>
+                </form>
+              )}
             </GlassCard>
           ))}
         </div>

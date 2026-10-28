@@ -19,7 +19,7 @@ function Cuenta() {
       <PageHeader
         eyebrow="Tu espacio"
         title={user ? "Hola, " + user.name.split(" ")[0] : "Todo empieza con una idea"}
-        text="Comparte lo que diseñas. Encuentra lo que necesitas. Fabrica a tu manera."
+        text="Compra diseños, propone tus creaciones para vender y encarga tus piezas."
       />
       <section className="mx-auto max-w-6xl px-6 py-12">
         {!user ? (
@@ -27,22 +27,17 @@ function Cuenta() {
         ) : (
           <div className="space-y-6">
             <GlassCard className="relative overflow-hidden p-8">
-              <p className="label-caps text-accent">Comunidad ProtoLab</p>
-              <h2 className="mt-3 text-2xl font-bold">
-                {user.canDownload
-                  ? "Tu próxima idea ya te está esperando."
-                  : "Tu primer diseño abre muchas posibilidades."}
-              </h2>
+              <p className="label-caps text-accent">Tu catálogo de posibilidades</p>
+              <h2 className="mt-3 text-2xl font-bold">Tus diseños comprados, en un solo lugar.</h2>
               <p className="mt-3 max-w-xl text-muted-foreground">
-                {user.canDownload
-                  ? "Ya puedes descargar los diseños publicados y fabricarlos en tu impresora."
-                  : "Publica un diseño original. Cuando el equipo lo apruebe, podrás descargar todos los diseños de la comunidad."}
+                Cada compra con pago verificado habilita su archivo. Publicar diseños es una opción
+                para vender tus creaciones, independiente de tus compras.
               </p>
               <Link
-                to={user.canDownload ? "/disenos" : "/publicar"}
+                to="/panel"
                 className="mt-6 inline-flex items-center gap-2 text-accent font-semibold"
               >
-                {user.canDownload ? "Explorar diseños" : "Publicar mi primer diseño"}
+                Ver mis compras y proyectos
                 <ArrowUpRight className="size-4" />
               </Link>
             </GlassCard>
@@ -50,14 +45,14 @@ function Cuenta() {
               {[
                 {
                   to: "/publicar",
-                  title: "Comparte un diseño",
-                  text: "Dale una nueva vida a lo que creaste.",
+                  title: "Vende un diseño",
+                  text: "Propón tu creación y su precio para revisión.",
                   Icon: Upload,
                 },
                 {
                   to: "/disenos",
                   title: "Encuentra tu próxima pieza",
-                  text: "Descarga o pídenos que la fabriquemos.",
+                  text: "Compra el archivo o cotiza su fabricación.",
                   Icon: Download,
                 },
                 {

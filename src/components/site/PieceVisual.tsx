@@ -234,7 +234,7 @@ export function PieceVisual({
       <p className="mt-4 text-sm font-semibold text-foreground" aria-live="polite">
         {STAGES[stage]}
       </p>
-      <p className="mt-1 text-xs text-muted-foreground">{label || "Comparte. Diseña. Fabrica."}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{label || "Diseña. Elige. Fabrica."}</p>
     </div>
   );
 }

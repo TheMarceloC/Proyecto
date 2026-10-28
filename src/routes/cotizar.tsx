@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api, uploadFile, errorText, type Design } from "@/lib/community";
+import { demoDesign } from "@/lib/demo-designs";
 import { AccountForm, useMember } from "@/components/community/Account";
 import {
   ArrowLeft,
@@ -33,8 +34,8 @@ import {
 import { PieceVisual } from "@/components/site/PieceVisual";
 import { MaterialEstimate } from "@/components/site/MaterialEstimate";
 import { PrintCostControls } from "@/components/site/PrintCostControls";
-import { DEFAULT_PRINT_SETTINGS, printEstimate } from "@/lib/print-pricing";
-import { materialEstimate } from "@/lib/material-pricing";
+import { DEFAULT_PRINT_SETTINGS } from "@/lib/print-pricing";
+import { QUICK_SIZES, quickEstimate, type QuickSize } from "@/lib/quick-estimate";
 import {
   MATERIALS as MATERIAL_LIST,
   REQUIREMENTS,
@@ -53,7 +54,8 @@ export const Route = createFileRoute("/cotizar")({
     ...(typeof search["inicio"] === "string" && START_IDS.includes(search["inicio"])
       ? { inicio: search["inicio"] as StartOptionId }
       : {}),
-    ...(typeof search["diseno"] === "string" && /^[0-9a-f-]{36}$/.test(search["diseno"])
+    ...(typeof search["diseno"] === "string" &&
+    (/^[0-9a-f-]{36}$/.test(search["diseno"]) || demoDesign(search["diseno"]))
       ? { diseno: search["diseno"] }
       : {}),
   }),
@@ -68,20 +70,20 @@ export const Route = createFileRoute("/cotizar")({
       { property: "og:title", content: "Cotizar mi pieza — ProtoLab" },
       {
         property: "og:description",
-        content: "Cinco pasos guiados: proyecto, diseño, fabricación, entrega y cotización.",
+        content: "Estima tu pieza sin cuenta. Guarda y envía a revisión cuando quieras continuar.",
       },
     ],
   }),
   component: CotizarPage,
 });
 
-const STEPS = ["Proyecto", "Tu idea", "Tu pieza", "Contacto", "Cotización"];
+const STEPS = ["Proyecto", "Tu idea", "Tu pieza", "Estimación", "Guardar y enviar"];
 const STEP_HINTS = [
   "Cuéntanos qué tienes y para qué es la pieza.",
   "Describe tu idea. Puedes añadir una foto o boceto si lo tienes.",
   "Dinos cuántas piezas necesitas. De lo técnico nos encargamos nosotros.",
-  "Cómo y a quién entregamos.",
-  "Tu estimación preliminar.",
+  "Consulta tu estimación sin cuenta ni datos de contacto.",
+  "Completa tus datos e inicia sesión solo para enviar a revisión.",
 ];
 const startIcons = [FileBox, Pencil, Package, Lightbulb];
 const COLORS = ["Negro", "Blanco", "Gris", "Otro", "No importa"];
@@ -96,12 +98,13 @@ function CotizarPage() {
   const linkedDesign = useQuery({
     queryKey: ["design", diseno],
     queryFn: () => api<Design>("designs/" + diseno),
-    enabled: Boolean(diseno),
+    initialData: demoDesign(diseno),
+    enabled: Boolean(diseno) && !demoDesign(diseno),
     retry: false,
   });
   const [step, setStep] = useState(0);
   const [start, setStart] = useState<StartOptionId>(inicio ?? (diseno ? "archivo" : "idea"));
-  const [useCase, setUseCase] = useState(USE_CASES[0]!);
+  const [useCase, setUseCase] = useState("");
   const [requirement, setRequirement] = useState(REQUIREMENTS[REQUIREMENTS.length - 1]!);
   const [file, setFile] = useState<UploadState>(null);
   const [refFile, setRefFile] = useState<UploadState>(null);
@@ -111,6 +114,7 @@ function CotizarPage() {
   const [color, setColor] = useState("No importa");
   const [quantity, setQuantity] = useState(1);
   const [gramsInput, setGramsInput] = useState("");
+  const [quickSize, setQuickSize] = useState<QuickSize>("");
   const [printSettings, setPrintSettings] = useState({ ...DEFAULT_PRINT_SETTINGS, hours: "" });
   const [priority, setPriority] = useState("Normal");
   const [detail, setDetail] = useState("");
@@ -124,10 +128,12 @@ function CotizarPage() {
   const hasFileFlow = start === "archivo";
   const recommendation = recommendMaterial(requirement);
   const effectiveMaterial = material === "auto" ? recommendation.code : material;
-  const grams = Number(gramsInput);
   const needsDesign = !hasFileFlow && !linkedDesign.data;
-  const estimate = materialEstimate(effectiveMaterial, grams, quantity);
-  const printing = printEstimate(effectiveMaterial, grams, quantity, printSettings);
+  const quick = quickEstimate(effectiveMaterial, quantity, quickSize, gramsInput, printSettings);
+  const grams = quick?.grams ?? Number(gramsInput);
+  const printing = quick?.printing;
+  const estimate = printing?.material;
+  const estimateSettings = quick?.settings ?? printSettings;
 
   const progress = Math.round(((step + 1) / STEPS.length) * 100);
 
@@ -144,6 +150,18 @@ function CotizarPage() {
   }
 
   async function submit() {
+    if (demoDesign(diseno)) {
+      setSubmitError(
+        "Este diseño pertenece a la demostración. Puedes explorar la estimación, pero no se enviará un pedido real.",
+      );
+      return;
+    }
+    if (member.data?.configured === false || member.isError) {
+      setSubmitError(
+        "No podemos enviar la solicitud ahora. Tu estimación sigue disponible; intenta de nuevo más tarde.",
+      );
+      return;
+    }
     if (!member.data?.user) {
       setSubmitError("Inicia sesión para guardar tu cotización.");
       return;
@@ -160,7 +178,9 @@ function CotizarPage() {
       !client.city.trim() ||
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(client.email)
     ) {
-      setSubmitError("Completa nombre, correo válido, teléfono y ciudad en el paso Entrega.");
+      setSubmitError(
+        "Completa nombre, correo válido, teléfono y ciudad para guardar y enviar a revisión.",
+      );
       return;
     }
     setSubmitting(true);
@@ -169,7 +189,12 @@ function CotizarPage() {
       const selected = hasFileFlow ? file : refFile;
       const file_path = selected ? await uploadFile(selected.raw, "quote") : null;
       const result = await api<{ code: string }>("quotes", {
-        project: projectName || linkedDesign.data?.title || detail.slice(0, 100) || useCase,
+        project:
+          projectName ||
+          linkedDesign.data?.title ||
+          detail.slice(0, 100) ||
+          useCase ||
+          "Pieza por definir",
         material: effectiveMaterial,
         quantity,
         priority,
@@ -182,7 +207,7 @@ function CotizarPage() {
         design_id: linkedDesign.data?.id || null,
         specifications: {
           start,
-          useCase,
+          useCase: useCase || "Por definir",
           requirement,
           dims,
           color,
@@ -191,12 +216,19 @@ function CotizarPage() {
           // Referencia del cliente; el precio aprobado sigue siendo exclusivo del equipo.
           materialEstimate: {
             gramsPerPiece: estimate?.grams ?? null,
-            assumedWeight: false,
+            assumedWeight: quick?.assumedWeight ?? false,
+            referenceSize: quickSize || null,
             needsDesign,
           },
           printing: {
             ...printSettings,
-            hours: printSettings.hours.trim() ? Number(printSettings.hours) || null : null,
+            hours: quick
+              ? Number(estimateSettings.hours)
+              : printSettings.hours.trim()
+                ? Number(printSettings.hours) || null
+                : null,
+            timeBasis: estimateSettings.timeBasis,
+            assumedTime: quick?.assumedTime ?? false,
             printer: printing?.profile.id ?? printSettings.printer,
             effectiveWatts: printing?.watts ?? null,
           },
@@ -242,13 +274,28 @@ function CotizarPage() {
       <SectionHeading
         eyebrow="Cotizar"
         title="Cotizar mi pieza"
-        text="Empieza con una idea, una foto o un boceto. Te guiamos sin pedirte conocimientos de impresión 3D."
+        text="Estima tu pieza sin cuenta. Puedes comenzar con una idea y dejar los detalles técnicos en nuestras manos."
       />
+      {linkedDesign.isError && (
+        <p
+          role="status"
+          className="mt-5 rounded-xl border border-border p-4 text-sm text-muted-foreground"
+        >
+          No pudimos cargar el diseño elegido. Puedes seguir describiendo tu pieza o volver a
+          intentarlo más tarde.
+        </p>
+      )}
 
       {linkedDesign.data && (
         <div className="mt-6 rounded-2xl border border-accent/30 bg-accent/10 p-4 text-sm">
           Fabricar diseño: <strong>{linkedDesign.data.title}</strong> · por{" "}
           {linkedDesign.data.author_name}
+          {demoDesign(diseno) && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Referencia de demostración: no incluye un archivo para fabricar y no permite enviar un
+              pedido real.
+            </p>
+          )}
         </div>
       )}
       <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_340px]">
@@ -321,7 +368,10 @@ function CotizarPage() {
                   </div>
                 </Field>
 
-                <Field label="¿Para qué necesitas la pieza?">
+                <Field
+                  label="¿Para qué necesitas la pieza?"
+                  hint="Elige lo que se acerque a tu proyecto, o déjalo por definir."
+                >
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                     {USE_CASES.map((u) => (
                       <PillOption key={u} selected={useCase === u} onClick={() => setUseCase(u)}>
@@ -578,6 +628,31 @@ function CotizarPage() {
                   </Field>
                 </div>
 
+                <Field
+                  label="Tamaño de referencia (opcional)"
+                  hint="Elige una referencia para ver un presupuesto rápido sin calcular peso ni horas. El tamaño real se revisa con el equipo."
+                >
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    {QUICK_SIZES.map((size) => (
+                      <OptionCard
+                        key={size.id}
+                        title={size.label}
+                        text={size.description}
+                        selected={quickSize === size.id}
+                        onClick={() => setQuickSize(size.id)}
+                      />
+                    ))}
+                  </div>
+                  {quickSize && (
+                    <button
+                      type="button"
+                      className="mt-3 text-xs text-accent"
+                      onClick={() => setQuickSize("")}
+                    >
+                      Prefiero que el equipo revise mi idea
+                    </button>
+                  )}
+                </Field>
                 <Field label="Color" hint="Si no importa, lo elegimos según disponibilidad.">
                   <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
                     {COLORS.map((c) => (
@@ -624,69 +699,137 @@ function CotizarPage() {
               </div>
             ) : null}
 
-            {step === 3 ? (
-              <div className="grid gap-6 lg:grid-cols-2">
-                <Field label="Forma de entrega">
-                  <div className="grid gap-3">
-                    {["Retiro local", "Envío"].map((d) => (
-                      <OptionCard
-                        key={d}
-                        title={d}
-                        text={
-                          d === "Envío"
-                            ? "Coordinamos el envío a tu ciudad."
-                            : "Recoge tu pieza en el punto acordado."
-                        }
-                        selected={delivery === d}
-                        onClick={() => setDelivery(d)}
-                      />
-                    ))}
-                  </div>
-                </Field>
-                <div className="grid gap-4">
-                  <Field label="Nombre">
-                    <input
-                      className={inputClass}
-                      value={client.name}
-                      onChange={(e) => setClient({ ...client, name: e.target.value })}
-                    />
+            {step === 4 ? (
+              <div className="space-y-6">
+                <p className="text-sm text-muted-foreground">
+                  Para guardar y enviar a revisión, completa tus datos de contacto e inicia sesión.
+                  Tu estimación no cambia al crear la cuenta.
+                </p>
+                <div className="grid gap-6 lg:grid-cols-2">
+                  <Field label="Forma de entrega">
+                    <div className="grid gap-3">
+                      {["Retiro local", "Envío"].map((d) => (
+                        <OptionCard
+                          key={d}
+                          title={d}
+                          text={
+                            d === "Envío"
+                              ? "Coordinamos el envío a tu ciudad."
+                              : "Recoge tu pieza en el punto acordado."
+                          }
+                          selected={delivery === d}
+                          onClick={() => setDelivery(d)}
+                        />
+                      ))}
+                    </div>
                   </Field>
-                  <Field label="Correo">
-                    <input
-                      type="email"
-                      className={inputClass}
-                      value={client.email}
-                      onChange={(e) => setClient({ ...client, email: e.target.value })}
-                    />
-                  </Field>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Field label="Teléfono">
+                  <div className="grid gap-4">
+                    <Field label="Nombre">
                       <input
+                        aria-label="Nombre de contacto"
+                        autoComplete="name"
+                        maxLength={100}
                         className={inputClass}
-                        value={client.phone}
-                        onChange={(e) => setClient({ ...client, phone: e.target.value })}
+                        value={client.name}
+                        onChange={(e) => setClient({ ...client, name: e.target.value })}
                       />
                     </Field>
-                    <Field label="Ciudad">
+                    <Field label="Correo">
                       <input
+                        aria-label="Correo de contacto"
+                        autoComplete="email"
+                        maxLength={254}
+                        type="email"
                         className={inputClass}
-                        value={client.city}
-                        onChange={(e) => setClient({ ...client, city: e.target.value })}
+                        value={client.email}
+                        onChange={(e) => setClient({ ...client, email: e.target.value })}
                       />
                     </Field>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Field label="Teléfono">
+                        <input
+                          aria-label="Teléfono de contacto"
+                          autoComplete="tel"
+                          type="tel"
+                          maxLength={30}
+                          className={inputClass}
+                          value={client.phone}
+                          onChange={(e) => setClient({ ...client, phone: e.target.value })}
+                        />
+                      </Field>
+                      <Field label="Ciudad">
+                        <input
+                          aria-label="Ciudad de entrega"
+                          autoComplete="address-level2"
+                          maxLength={100}
+                          className={inputClass}
+                          value={client.city}
+                          onChange={(e) => setClient({ ...client, city: e.target.value })}
+                        />
+                      </Field>
+                    </div>
                   </div>
                 </div>
+                {member.isPending && (
+                  <p role="status" className="text-sm text-muted-foreground">
+                    Comprobando disponibilidad para enviar…
+                  </p>
+                )}
+                {member.data?.configured === false && (
+                  <p
+                    role="status"
+                    className="rounded-xl border border-border p-4 text-sm text-muted-foreground"
+                  >
+                    El envío de solicitudes y las cuentas no están disponibles ahora. Puedes volver
+                    a tu estimación y continuar más tarde.
+                  </p>
+                )}
+                {member.isError && (
+                  <div role="status" className="text-sm text-muted-foreground">
+                    <p>
+                      No pudimos conectar con el servicio de solicitudes. Tu estimación sigue
+                      disponible.
+                    </p>
+                    <Button variant="ghost" className="mt-3" onClick={() => member.refetch()}>
+                      Reintentar conexión
+                    </Button>
+                  </div>
+                )}
+                {!member.data?.user && member.data?.configured === true && <AccountForm />}
+                {submitError && (
+                  <p role="alert" className="text-sm text-red-300">
+                    {submitError}
+                  </p>
+                )}
+                <Button
+                  className="w-full"
+                  disabled={
+                    submitting ||
+                    member.isPending ||
+                    member.isError ||
+                    member.data?.configured !== true ||
+                    !member.data.user
+                  }
+                  onClick={submit}
+                >
+                  {submitting
+                    ? "Guardando solicitud…"
+                    : "Guardar y enviar a revisión con el equipo"}
+                </Button>
               </div>
             ) : null}
 
-            {step === 4 ? (
+            {step === 3 ? (
               <div className="grid gap-6">
                 <div className="space-y-2 text-sm">
                   <p className="label-caps mb-3">Resumen de la solicitud</p>
                   {[
-                    ["Proyecto", projectName || detail.slice(0, 40) || `${useCase}`],
+                    [
+                      "Proyecto",
+                      projectName || detail.slice(0, 40) || useCase || "Pieza por definir",
+                    ],
                     ["Punto de partida", START_OPTIONS.find((o) => o.id === start)?.title ?? ""],
-                    ["Uso previsto", useCase],
+                    ["Uso previsto", useCase || "Por definir"],
                     ["La pieza debe", requirement],
                     [
                       "Archivo",
@@ -709,8 +852,6 @@ function CotizarPage() {
                     ["Color", color],
                     ["Cantidad", `${quantity} ${quantity === 1 ? "pieza" : "piezas"}`],
                     ["Prioridad", priority],
-                    ["Entrega", delivery],
-                    ["Cliente", client.name || "—"],
                   ].map(([k, v]) => (
                     <div
                       key={k}
@@ -728,7 +869,10 @@ function CotizarPage() {
                     quantity={quantity}
                     needsDesign={needsDesign}
                     priceAvailable={Boolean(printing)}
-                    settings={printSettings}
+                    settings={estimateSettings}
+                    assumedWeight={quick?.assumedWeight ?? false}
+                    assumedTime={quick?.assumedTime ?? false}
+                    referenceMaterial={material === "auto"}
                   />
                   <p className="mt-2 text-xs text-muted-foreground">
                     Revisaremos tu solicitud y confirmaremos el precio antes de fabricar.
@@ -740,23 +884,10 @@ function CotizarPage() {
                       Depende del tamaño, material, complejidad, cantidad y capacidad disponible.
                     </p>
                   </div>
-                  {!member.data?.user && (
-                    <div className="mt-5">
-                      <AccountForm />
-                    </div>
-                  )}
-                  {submitError && (
-                    <p role="alert" className="mt-4 text-sm text-red-300">
-                      {submitError}
-                    </p>
-                  )}
-                  <Button
-                    className="mt-5 w-full"
-                    disabled={submitting || !member.data?.user}
-                    onClick={submit}
-                  >
-                    {submitting ? "Guardando solicitud…" : "Solicitar mi cotización"}
-                  </Button>
+                  <p className="mt-5 text-sm text-accent">
+                    Puedes consultar esta estimación sin cuenta. Continúa solo si quieres enviarla
+                    al equipo.
+                  </p>
                 </GlassCard>
               </div>
             ) : null}
@@ -772,10 +903,17 @@ function CotizarPage() {
             </Button>
             {step < STEPS.length - 1 ? (
               <Button onClick={() => setStep((s) => Math.min(STEPS.length - 1, s + 1))}>
-                Continuar <ArrowRight className="size-4" />
+                {step === 2
+                  ? "Ver estimación sin cuenta"
+                  : step === 3
+                    ? "Continuar para guardar y enviar"
+                    : "Continuar"}{" "}
+                <ArrowRight className="size-4" />
               </Button>
             ) : (
-              <span className="text-xs text-muted-foreground">Todo listo para enviar.</span>
+              <span className="text-xs text-muted-foreground">
+                Revisa tus datos antes de enviar.
+              </span>
             )}
           </div>
         </GlassCard>
@@ -788,11 +926,11 @@ function CotizarPage() {
               material={effectiveMaterial}
               label={
                 step === 4
-                  ? "Tu proyecto está listo para cotizar."
+                  ? "El equipo revisará tu proyecto antes de fabricar."
                   : "De tu idea a una pieza. Te acompañamos en cada paso."
               }
             />
-            {step < 4 && (
+            {step !== 3 && (
               <div className="mt-4">
                 <MaterialEstimate
                   material={effectiveMaterial}
@@ -800,7 +938,10 @@ function CotizarPage() {
                   quantity={quantity}
                   needsDesign={needsDesign}
                   priceAvailable={Boolean(printing)}
-                  settings={printSettings}
+                  settings={estimateSettings}
+                  assumedWeight={quick?.assumedWeight ?? false}
+                  assumedTime={quick?.assumedTime ?? false}
+                  referenceMaterial={material === "auto"}
                 />
               </div>
             )}

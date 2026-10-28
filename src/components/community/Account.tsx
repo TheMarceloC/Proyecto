@@ -39,7 +39,7 @@ export function AccountForm() {
             {register ? "Crea tu espacio maker" : "Bienvenido a ProtoLab"}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Tus diseños, tus piezas y tu comunidad.
+            Tus compras, tus diseños y tus piezas.
           </p>
         </div>
       </div>
@@ -68,6 +68,7 @@ export function AccountForm() {
         className="space-y-4"
         onSubmit={async (event) => {
           event.preventDefault();
+          if (session.isPending || session.isError || session.data?.configured !== true) return;
           setBusy(true);
           setError("");
           setNotice("");
@@ -145,7 +146,20 @@ export function AccountForm() {
             catálogo.
           </p>
         )}
-        <Button className="w-full" disabled={busy || session.data?.configured === false}>
+        {session.isError && (
+          <div role="status" className="text-sm text-muted-foreground">
+            <p>No pudimos comprobar el acceso. Puedes seguir explorando y estimando tu pieza.</p>
+            <button type="button" className="mt-2 text-accent" onClick={() => session.refetch()}>
+              Reintentar conexión
+            </button>
+          </div>
+        )}
+        <Button
+          className="w-full"
+          disabled={
+            busy || session.isPending || session.isError || session.data?.configured !== true
+          }
+        >
           {busy ? <Loader2 className="size-4 animate-spin" /> : <ArrowRight className="size-4" />}
           {register ? "Crear mi cuenta" : "Entrar a mi cuenta"}
         </Button>
@@ -158,7 +172,7 @@ export function AccountForm() {
       </form>
       <p className="mt-6 flex items-center gap-2 text-xs text-muted-foreground">
         <ShieldCheck className="size-4 text-accent" />
-        Publica un diseño aprobado y desbloquea las descargas.
+        Cada compra verificada habilita la descarga de ese diseño.
       </p>
     </GlassCard>
   );

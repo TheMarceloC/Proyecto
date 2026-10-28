@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import server from "../.vercel/output/functions/__server.func/index.mjs";
 
-test("API: archivos privados, regla de aportación y límites de autorización", async () => {
+test("API: compras individuales, archivos privados y límites de autorización", async () => {
   const originalFetch = globalThis.fetch;
   const names = [
     "SUPABASE_URL",
@@ -22,6 +22,8 @@ test("API: archivos privados, regla de aportación y límites de autorización",
     staff: { id: staff, email: "staff@example.com" },
   };
   let signed = 0;
+  let paid = false;
+  let receivedPurchase;
   let receivedQuote;
   const call = (path, token, body, origin = "https://protolab.test") =>
     server.fetch(
@@ -39,6 +41,16 @@ test("API: archivos privados, regla de aportación y límites de autorización",
     names.forEach((name) => delete process.env[name]);
     assert.deepEqual(await (await call("session")).json(), { configured: false, user: null });
     assert.equal((await call("quotes", "", {})).status, 503);
+    assert.equal((await (await call("quotes", "", {})).json()).configured, false);
+    assert.deepEqual(await (await call("designs")).json(), []);
+    assert.equal((await call("uploads", "", {})).status, 503);
+    process.env["SUPABASE_URL"] = "URL-inválida";
+    process.env["SUPABASE_PUBLISHABLE_KEY"] = "test-publishable";
+    process.env["SUPABASE_SECRET_KEY"] = "test-secret";
+    assert.deepEqual(await (await call("session")).json(), { configured: false, user: null });
+    assert.equal((await call("auth/signup", "", {})).status, 503);
+    delete process.env["SUPABASE_PUBLISHABLE_KEY"];
+    delete process.env["SUPABASE_SECRET_KEY"];
     assert.equal(
       (await call("download", "", { id: designId }, "https://evil.example")).status,
       403,
@@ -61,6 +73,23 @@ test("API: archivos privados, regla de aportación y límites de autorización",
           : new Response(JSON.stringify({ message: "invalid token" }), { status: 401 });
       if (url.pathname === "/rest/v1/profiles")
         return json({ display_name: token, is_admin: token === "staff" });
+      if (url.pathname === "/rest/v1/design_purchases")
+        return json(
+          paid &&
+            url.searchParams.get("design_id") === "eq." + designId &&
+            url.searchParams.get("owner_id") === "eq." + b
+            ? [{ id: "66666666-6666-4666-8666-666666666666", design_id: designId, status: "paid" }]
+            : [],
+        );
+      if (url.pathname === "/rest/v1/rpc/request_design_purchase") {
+        receivedPurchase = JSON.parse(init.body);
+        return json({
+          id: "66666666-6666-4666-8666-666666666666",
+          design_id: designId,
+          amount: 250,
+          status: "pending",
+        });
+      }
       if (url.pathname === "/rest/v1/quotes") {
         receivedQuote = JSON.parse(init.body);
         return json({ id: "55555555-5555-4555-8555-555555555555", code: "PL-IDEA-TEST" });
@@ -72,8 +101,9 @@ test("API: archivos privados, regla de aportación y límites de autorización",
         else
           rows = [
             {
-              id: designId,
-              owner_id: a,
+              id: url.searchParams.get("id")?.slice(3) || designId,
+              owner_id:
+                url.searchParams.get("id") === "eq.88888888-8888-4888-8888-888888888888" ? b : a,
               status: "approved",
               file_path: a + "/part.stl",
               image_path: null,
@@ -89,6 +119,11 @@ test("API: archivos privados, regla de aportación y límites de autorización",
       throw new Error("Unexpected network call: " + url.pathname);
     };
     assert.equal((await call("admin")).status, 401, "Administración requiere cuenta");
+    assert.equal(
+      (await call("quotes", "", { project: "Visitante" })).status,
+      401,
+      "Solo guardar exige cuenta",
+    );
     assert.equal((await call("admin", "bob")).status, 403, "Ser usuario no concede administración");
     assert.equal((await call("download", "", { id: designId })).status, 401);
     assert.equal(
@@ -100,13 +135,77 @@ test("API: archivos privados, regla de aportación y límites de autorización",
     assert.equal(
       (await call("download", "alice", { id: designId })).status,
       200,
-      "Aportación aprobada permite descargar",
+      "El autor puede descargar su propio archivo",
+    );
+    assert.equal(signed, 1);
+    assert.equal(
+      (await call("download", "alice", { id: "88888888-8888-4888-8888-888888888888" })).status,
+      403,
+      "Ser autor de un diseño aprobado no concede acceso al de otro creador",
     );
     assert.equal(signed, 1);
     const session = await (await call("session", "bob")).json();
-    assert.equal(session.user.canDownload, false);
+    assert.equal(session.user.canDownload, undefined, "No existe desbloqueo global");
     const alice = await (await call("session", "alice")).json();
-    assert.equal(alice.user.canDownload, true);
+    assert.equal(alice.user.canDownload, undefined);
+    assert.equal((await call("purchases", "", { design_id: designId })).status, 401);
+    assert.equal(
+      (
+        await call("admin/purchase", "bob", {
+          id: designId,
+          status: "paid",
+          reference: "fake-payment",
+        })
+      ).status,
+      403,
+    );
+    assert.equal(
+      (await call("purchases", "bob", { design_id: designId })).status,
+      400,
+      "Comprar requiere aceptar licencia",
+    );
+    const purchase = await call("purchases", "bob", {
+      design_id: designId,
+      accepted_license: "Uso personal · ProtoLab v1",
+      amount: 1,
+      status: "paid",
+    });
+    assert.equal(purchase.status, 201);
+    assert.equal((await purchase.json()).amount, 250);
+    assert.deepEqual(
+      receivedPurchase,
+      { p_design_id: designId },
+      "El servidor ignora precio y estado del navegador",
+    );
+    assert.equal(
+      (await call("download", "bob", { id: designId })).status,
+      403,
+      "Solicitar compra no habilita descarga",
+    );
+    paid = true;
+    assert.equal(
+      (await call("download", "bob", { id: designId })).status,
+      200,
+      "Pago de este diseño permite descargar",
+    );
+    assert.equal(signed, 2);
+    assert.equal(
+      (await call("download", "bob", { id: "77777777-7777-4777-8777-777777777777" })).status,
+      403,
+      "Pagar otro diseño no concede acceso global",
+    );
+    paid = false;
+    assert.equal(
+      (await call("download", "bob", { id: designId })).status,
+      403,
+      "Una compra revocada deja de permitir descargas",
+    );
+    assert.equal(signed, 2);
+    assert.equal(
+      (await call("download", "staff", { id: designId })).status,
+      200,
+      "Equipo puede revisar el archivo",
+    );
     const visitor = await (await call("designs")).json();
     assert.equal(visitor.length, 1, "Los diseños aprobados se pueden ver sin cuenta");
     assert.equal(

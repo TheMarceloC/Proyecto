@@ -3,7 +3,7 @@ import { ProcessSection, PageHeader, CtaSection } from "@/components/site/sectio
 import { GlassCard } from "@/components/site/ui";
 import { Eye, Upload, Download } from "lucide-react";
 export const Route = createFileRoute("/como-funciona")({
-  head: () => ({ meta: [{ title: "Comparte, descubre y fabrica — ProtoLab" }] }),
+  head: () => ({ meta: [{ title: "Explora, compra y fabrica — ProtoLab" }] }),
   component: How,
 });
 function How() {
@@ -11,8 +11,8 @@ function How() {
     <>
       <PageHeader
         eyebrow="Dos caminos. Muchas ideas."
-        title="Fabrica con nosotros. Crea con todos."
-        text="Pide una pieza sin tener impresora, o contribuye con un diseño para fabricar en la tuya."
+        title="Compra el diseño. O encarga la pieza."
+        text="El archivo digital y la pieza fabricada son compras independientes. Elige lo que necesitas."
       />
       <section className="mx-auto max-w-7xl px-6 py-12">
         <div className="grid gap-5 md:grid-cols-3">
@@ -24,13 +24,13 @@ function How() {
             },
             {
               Icon: Upload,
-              title: "Comparte una creación",
-              text: "Crea tu cuenta, sube un archivo original y elige una licencia que permita compartir y fabricar. El equipo revisa tu publicación.",
+              title: "Elige y solicita la compra",
+              text: "Cada diseño tiene un precio aprobado según su complejidad. Crea tu cuenta, revisa la licencia y registra la compra; el pago se coordina con el equipo.",
             },
             {
               Icon: Download,
-              title: "Desbloquea las descargas",
-              text: "Mientras tengas al menos un diseño aprobado, podrás descargar toda la colección. No se consumen créditos por cada archivo.",
+              title: "Recibe tu archivo",
+              text: "Cuando el equipo verifica el pago, puedes descargar ese diseño desde tu cuenta. Si prefieres recibir la pieza física, solicita una cotización de fabricación.",
             },
           ].map((s) => (
             <GlassCard key={s.title} className="p-7">
@@ -42,7 +42,7 @@ function How() {
         </div>
         <div className="mt-8 flex flex-wrap gap-5">
           <Link to="/publicar" className="font-semibold text-accent">
-            Publicar mi diseño →
+            Proponer un diseño para vender →
           </Link>
           <Link to="/disenos" className="font-semibold text-accent">
             Explorar la colección →

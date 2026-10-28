@@ -62,14 +62,13 @@
   --popover: oklch(0.21 0.04 265);
   --popover-foreground: oklch(0.98 0.005 250);
 
-  /* accent = teal signal (#06d6a0) */
-  --accent: oklch(0.79 0.152 168);
+  /* Brand palette shared with the Milestone 1 identity kit. */
+  --accent: #2ad9a8;
   --accent-foreground: oklch(0.16 0.035 264);
-  /* brand = electric blue (#4361ee) */
-  --brand: oklch(0.55 0.213 268);
+  --brand: #3e60eb;
   --brand-foreground: oklch(0.99 0 0);
 
-  --primary: oklch(0.79 0.152 168);
+  --primary: #2ad9a8;
   --primary-foreground: oklch(0.16 0.035 264);
   --secondary: oklch(0.26 0.04 265);
   --secondary-foreground: oklch(0.98 0.005 250);

@@ -8,7 +8,7 @@ export function Footer() {
         <div>
           <Logo />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
-            Una comunidad que comparte ideas. Un taller que las hace realidad.
+            Diseños con valor. Fabricación a tu medida.
           </p>
         </div>
         <nav
@@ -24,7 +24,7 @@ export function Footer() {
         <div>
           <p className="label-caps text-accent">Crea con nosotros</p>
           <p className="mt-3 text-sm text-muted-foreground">
-            Comparte tu diseño o encuentra tu próxima pieza en la comunidad.
+            Propón un diseño para vender o encuentra la pieza que necesitas.
           </p>
           <Link to="/publicar" className="mt-4 inline-block text-sm font-semibold text-accent">
             Publicar un diseño ↗
@@ -33,7 +33,7 @@ export function Footer() {
         </div>
       </div>
       <div className="mx-auto max-w-7xl border-t border-border px-6 pt-6 text-xs text-muted-foreground">
-        © {new Date().getFullYear()} ProtoLab · Diseña. Comparte. Fabrica.
+        © {new Date().getFullYear()} ProtoLab · Diseña. Elige. Fabrica.
       </div>
     </footer>
   );

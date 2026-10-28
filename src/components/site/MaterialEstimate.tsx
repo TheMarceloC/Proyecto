@@ -8,6 +8,9 @@ export function MaterialEstimate({
   needsDesign,
   priceAvailable = false,
   settings,
+  assumedWeight = false,
+  assumedTime = false,
+  referenceMaterial = false,
 }: {
   material: string;
   grams: number;
@@ -15,6 +18,9 @@ export function MaterialEstimate({
   needsDesign: boolean;
   priceAvailable?: boolean;
   settings?: PrintCostSettings;
+  assumedWeight?: boolean;
+  assumedTime?: boolean;
+  referenceMaterial?: boolean;
 }) {
   const estimate = materialEstimate(material, grams, quantity);
   const printing = settings ? printEstimate(material, grams, quantity, settings) : null;
@@ -27,7 +33,7 @@ export function MaterialEstimate({
       aria-atomic="true"
     >
       <p className="label-caps text-accent">
-        {valid ? "Precio final estimado" : "Cotización a tu medida"}
+        {valid ? "Estimación orientativa" : "Cotización a tu medida"}
       </p>
       <p className="mt-2 font-display text-4xl font-bold text-foreground">
         {valid && total !== undefined ? formatCustomerPrice(total) : "Lo resolvemos contigo"}
@@ -38,11 +44,22 @@ export function MaterialEstimate({
       {needsDesign && (
         <p className="mt-3 text-sm font-semibold text-accent">También te ayudamos a diseñarla.</p>
       )}
+      {valid && (assumedWeight || assumedTime || referenceMaterial) && (
+        <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+          Referencia para calcular: {grams} g por pieza y {settings?.hours} h
+          {settings?.timeBasis === "batch" ? " por lote" : " por pieza"}, con {material}.
+          {assumedWeight || assumedTime
+            ? " Peso y tiempo aproximados según el tamaño elegido, sin analizar un archivo 3D."
+            : ""}
+          {referenceMaterial ? " Material sujeto a recomendación del equipo." : ""}
+        </p>
+      )}
       <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
         {valid
           ? "Estimación según los datos que compartiste. "
           : "Puedes continuar sin saber el peso, el material ni las horas de impresión. "}
-        Te confirmaremos el precio antes de fabricar. Diseño y envío se cotizan según tu proyecto.
+        Te confirmaremos el precio antes de fabricar. Diseño, acabados y condiciones de entrega se
+        confirman según tu proyecto.
       </p>
     </div>
   );

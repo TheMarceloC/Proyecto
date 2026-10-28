@@ -11,7 +11,10 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { api, DESIGN_CATEGORIES, type Design } from "@/lib/community";
+import { COMPLEXITIES, designPrice, type Complexity } from "@/lib/design-commerce";
 import { useMember } from "@/components/community/Account";
+import { CATALOG_DEMO_MODE, DEMO_DESIGNS } from "@/lib/demo-designs";
+import { DemoNotice } from "@/components/community/DemoDesign";
 import { Button, GlassCard } from "@/components/site/ui";
 import soporte from "@/assets/proj-soporte-sensor.jpg";
 import carcasa from "@/assets/proj-carcasa.jpg";
@@ -44,11 +47,10 @@ const SAMPLE_DESIGNS = [
 export const Route = createFileRoute("/disenos")({
   head: () => ({
     meta: [
-      { title: "Diseños de la comunidad — ProtoLab" },
+      { title: "Catálogo de diseños 3D — ProtoLab" },
       {
         name: "description",
-        content:
-          "Explora diseños 3D, comparte tus creaciones y pide tus piezas fabricadas por ProtoLab.",
+        content: "Compra diseños 3D según su complejidad o cotiza su fabricación con ProtoLab.",
       },
     ],
   }),
@@ -58,29 +60,42 @@ function DesignsPage() {
   const designs = useQuery({
     queryKey: ["designs"],
     queryFn: () => api<Design[]>("designs"),
+    enabled: !CATALOG_DEMO_MODE,
     retry: false,
   });
   const member = useMember();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("Todos");
-  const samples = SAMPLE_DESIGNS.filter(
+  const [complexity, setComplexity] = useState("");
+  const [sort, setSort] = useState("recent");
+  const samples = (CATALOG_DEMO_MODE ? [] : SAMPLE_DESIGNS).filter(
     (d) =>
       (category === "Todos" || d.category === category) &&
       [d.title, d.description, d.material].join(" ").toLowerCase().includes(search.toLowerCase()),
   );
-  const filtered = (designs.data || []).filter(
-    (d) =>
-      (category === "Todos" || d.category === category) &&
-      [d.title, d.description, d.author_name]
-        .join(" ")
-        .toLowerCase()
-        .includes(search.toLowerCase()),
-  );
+  const filtered = (CATALOG_DEMO_MODE ? DEMO_DESIGNS : designs.data || [])
+    .filter(
+      (d) =>
+        (category === "Todos" || d.category === category) &&
+        (!complexity || d.complexity === complexity) &&
+        [d.title, d.description, d.author_name]
+          .join(" ")
+          .toLowerCase()
+          .includes(search.toLowerCase()),
+    )
+    .sort((a, b) =>
+      sort === "low"
+        ? (a.price ?? Infinity) - (b.price ?? Infinity)
+        : sort === "high"
+          ? (b.price ?? 0) - (a.price ?? 0)
+          : 0,
+    );
   return (
     <section className="mx-auto max-w-7xl px-5 pt-10 pb-24 sm:px-6">
+      {CATALOG_DEMO_MODE && <DemoNotice />}
       <div className="relative overflow-hidden rounded-[2rem] border border-border bg-gradient-to-br from-brand/20 via-panel to-accent/5 p-7 sm:p-11">
         <div className="pointer-events-none absolute -right-16 -top-20 size-80 rounded-full border-[35px] border-accent/10" />
-        <p className="label-caps text-accent">Diseñado para compartir. Hecho para crear.</p>
+        <p className="label-caps text-accent">Diseños con valor. Piezas con propósito.</p>
         <div className="relative mt-4 grid gap-7 lg:grid-cols-[1fr_290px]">
           <div>
             <h1 className="max-w-2xl text-4xl font-bold leading-tight sm:text-5xl">
@@ -89,24 +104,23 @@ function DesignsPage() {
               <span className="text-gradient">empieza aquí.</span>
             </h1>
             <p className="mt-4 max-w-xl text-muted-foreground">
-              Descubre diseños de la comunidad. Nosotros los fabricamos, o tú les das vida en tu
-              impresora.
+              Compra el diseño para tu impresora o cotiza la pieza fabricada por ProtoLab. Cada
+              archivo tiene su precio, según el trabajo y la complejidad del diseño.
             </p>
             <Link
               to="/publicar"
               className="mt-6 inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 font-semibold text-accent-foreground"
             >
               <Upload className="size-4" />
-              Compartir mi diseño
+              Vender mi diseño
             </Link>
           </div>
           <div className="self-end rounded-2xl border border-white/10 bg-background/40 p-5">
             <Layers3 className="size-6 text-accent" />
-            <p className="mt-3 font-semibold">Una idea abre la colección.</p>
+            <p className="mt-3 font-semibold">Elige cómo crear.</p>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              {member.data?.user?.canDownload
-                ? "Tus descargas ya están desbloqueadas. Encuentra tu siguiente proyecto."
-                : "Publica un diseño original aprobado y desbloquea todas las descargas."}
+              Explorar es libre. Cada archivo se compra por separado y se descarga después de
+              verificar el pago. También puedes pedir solo la pieza física.
             </p>
             <Link to="/como-funciona" className="mt-4 inline-flex gap-2 text-sm text-accent">
               Así funciona
@@ -129,8 +143,33 @@ function DesignsPage() {
         </div>
         <p className="flex items-center gap-2 text-xs text-muted-foreground">
           <SlidersHorizontal className="size-4" />
-          Diseños de muestra y publicaciones de la comunidad
+          Archivo digital y fabricación: dos opciones independientes
         </p>
+      </div>
+      <div className="mt-5 flex flex-wrap gap-3">
+        <select
+          aria-label="Filtrar por complejidad"
+          value={complexity}
+          onChange={(e) => setComplexity(e.target.value)}
+          className="rounded-xl border border-border bg-panel px-4 py-3 text-sm"
+        >
+          <option value="">Todas las complejidades</option>
+          {Object.entries(COMPLEXITIES).map(([key, value]) => (
+            <option key={key} value={key}>
+              {value.label}
+            </option>
+          ))}
+        </select>
+        <select
+          aria-label="Ordenar diseños"
+          value={sort}
+          onChange={(e) => setSort(e.target.value)}
+          className="rounded-xl border border-border bg-panel px-4 py-3 text-sm"
+        >
+          <option value="recent">Más recientes</option>
+          <option value="low">Menor precio</option>
+          <option value="high">Mayor precio</option>
+        </select>
       </div>
       <div className="mt-5 flex flex-wrap gap-2" aria-label="Categorías">
         {DESIGN_CATEGORIES.map((item) => (
@@ -153,15 +192,24 @@ function DesignsPage() {
       <div className="mt-9 flex items-center justify-between">
         <h2 className="text-xl font-bold">Explora la colección</h2>
         <span className="text-xs text-muted-foreground">
-          {filtered.length} publicados · {samples.length} de muestra
+          {filtered.length} {CATALOG_DEMO_MODE ? "diseños de ejemplo" : "publicados"}
         </span>
       </div>
-      {designs.isPending && (
+      {!CATALOG_DEMO_MODE && designs.isPending && (
         <p role="status" className="mt-4 text-sm text-muted-foreground">
           Cargando publicaciones de la comunidad… Puedes explorar los diseños de muestra.
         </p>
       )}
-      {designs.isError && (
+      {!CATALOG_DEMO_MODE && member.data?.configured === false && (
+        <p
+          role="status"
+          className="mt-4 rounded-xl border border-border p-4 text-sm text-muted-foreground"
+        >
+          Las publicaciones y las cuentas no están disponibles en este momento. Puedes explorar las
+          muestras y estimar una pieza sin cuenta.
+        </p>
+      )}
+      {!CATALOG_DEMO_MODE && designs.isError && (
         <GlassCard className="mt-4 p-5">
           <p role="status" className="text-sm text-muted-foreground">
             No pudimos cargar las publicaciones de la comunidad. Los diseños de muestra siguen
@@ -174,7 +222,9 @@ function DesignsPage() {
       )}
       {filtered.length > 0 && (
         <>
-          <h3 className="mt-6 font-semibold">Publicaciones de la comunidad</h3>
+          <h3 className="mt-6 font-semibold">
+            {CATALOG_DEMO_MODE ? "Elige tu próximo diseño" : "Diseños a la venta"}
+          </h3>
           <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((design) => (
               <Link key={design.id} to="/diseno/$id" params={{ id: design.id }}>
@@ -198,8 +248,18 @@ function DesignsPage() {
                     </div>
                     <h3 className="mt-3 text-lg font-bold">{design.title}</h3>
                     <p className="mt-1 text-sm text-muted-foreground">por {design.author_name}</p>
+                    <div className="mt-4 flex items-center justify-between gap-2">
+                      <span className="rounded-full bg-brand/15 px-3 py-1 text-xs text-accent">
+                        {COMPLEXITIES[design.complexity as Complexity]?.label || "En revisión"}
+                      </span>
+                      <span className="text-2xl font-bold">
+                        {design.price !== null ? designPrice(design.price) : "En revisión"}
+                      </span>
+                    </div>
                     <div className="mt-5 flex items-center justify-between border-t border-border pt-4 text-sm">
-                      <span className="text-accent">Ver diseño</span>
+                      <span className="text-accent">
+                        {CATALOG_DEMO_MODE ? "Ver diseño y precio" : "Ver y comprar archivo"}
+                      </span>
                       <ArrowUpRight className="size-4 text-accent" />
                     </div>
                   </div>
@@ -212,8 +272,9 @@ function DesignsPage() {
       {samples.length > 0 ? (
         <>
           <p className="mt-4 text-sm text-muted-foreground">
-            Diseños de muestra para inspirarte. Las publicaciones de la comunidad se muestran al
-            aprobarse; estas muestras no incluyen archivos descargables.
+            Referencias para inspirarte: estas muestras no incluyen archivos descargables ni están a
+            la venta como diseños digitales. Puedes cotizar una pieza similar. Los diseños
+            comerciales aparecen arriba al aprobarse con su precio.
           </p>
           <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {samples.map((sample) => (
@@ -262,8 +323,8 @@ function DesignsPage() {
               : "Esta colección empieza contigo."}
           </h3>
           <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-            Comparte una creación original y ayuda a construir una biblioteca que todos puedan
-            descubrir.
+            Propón un diseño original para vender. El equipo revisará el archivo, la complejidad, el
+            precio y las condiciones comerciales antes de publicarlo.
           </p>
           <Link to="/publicar" className="mt-5 inline-flex gap-2 font-semibold text-accent">
             Publicar un diseño

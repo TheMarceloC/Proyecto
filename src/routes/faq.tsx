@@ -9,7 +9,7 @@ export const Route = createFileRoute("/faq")({
       {
         name: "description",
         content:
-          "Archivos aceptados, tiempos de fabricación, elección de material, cálculo de precio y proyectos para estudiantes.",
+          "Cotizaciones para talleres, ingeniería y negocios: archivos, materiales, revisión técnica y plazos de fabricación.",
       },
       { property: "og:title", content: "Preguntas frecuentes — ProtoLab" },
       {

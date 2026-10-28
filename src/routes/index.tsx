@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowUpRight, ArrowRight, Upload, Boxes, Compass, Check } from "lucide-react";
+import { ArrowUpRight, ArrowRight, ShoppingBag, Boxes, Compass, Check } from "lucide-react";
 import { ActionLink, Chip, GlassCard } from "@/components/site/ui";
 import {
   AdviceSection,
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Descubre y comparte diseños 3D. Cotiza tus piezas y deja su fabricación en manos de ProtoLab.",
+          "Compra diseños 3D o cotiza piezas personalizadas para ingeniería, talleres y negocios.",
       },
     ],
   }),
@@ -39,8 +39,8 @@ function Home() {
               <span className="text-gradient">Fabricada.</span>
             </h1>
             <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground">
-              Descubre lo que otros crean, comparte lo que tú imaginas y convierte un archivo en
-              algo que puedes sostener.
+              Compra un diseño para tu impresora o encarga una pieza a tu medida. Acompañamos a
+              técnicos, ingenieros y talleres desde la idea hasta la fabricación.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <ActionLink to="/disenos" className="px-6 py-4 text-base">
@@ -78,7 +78,7 @@ function Home() {
                 label="Del diseño digital a tu siguiente proyecto."
               />
               <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs text-muted-foreground">
-                {["01 / Diseña", "02 / Comparte", "03 / Fabrica"].map((t) => (
+                {["01 / Diseña", "02 / Elige", "03 / Fabrica"].map((t) => (
                   <span key={t} className="rounded-lg border border-border px-1 py-3">
                     {t}
                   </span>
@@ -98,11 +98,11 @@ function Home() {
             cta: "Quiero mi pieza fabricada",
           },
           {
-            Icon: Upload,
+            Icon: ShoppingBag,
             title: "¿Ya tienes una?",
-            text: "Aporta un diseño original aprobado y desbloquea las descargas de toda la comunidad.",
-            link: "/publicar",
-            cta: "Compartir mi primer diseño",
+            text: "Compra el archivo que necesitas. Cada diseño tiene un precio según su complejidad y trabajo de desarrollo.",
+            link: "/disenos",
+            cta: "Encontrar un diseño para comprar",
           },
         ].map((card) => (
           <Link key={card.title} to={card.link}>

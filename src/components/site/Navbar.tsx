@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Boxes, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { BRAND, NAV_LINKS } from "@/lib/protolab";
 import { btnStyles } from "./ui";
 import { MemberButton } from "@/components/community/Account";
@@ -8,9 +8,14 @@ import { MemberButton } from "@/components/community/Account";
 export function Logo() {
   return (
     <Link to="/" className="flex items-center gap-2.5">
-      <span className="grid size-8 place-items-center rounded-lg bg-gradient-to-br from-brand to-accent">
-        <Boxes className="size-4 text-accent-foreground" />
-      </span>
+      <img
+        src="/protolab-symbol.svg"
+        alt=""
+        aria-hidden="true"
+        width={40}
+        height={40}
+        className="size-10 shrink-0"
+      />
       <span className="font-display font-bold tracking-tight text-foreground">{BRAND.name}</span>
     </Link>
   );

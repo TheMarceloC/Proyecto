@@ -44,12 +44,13 @@ export const START_OPTIONS = [
 export type StartOptionId = (typeof START_OPTIONS)[number]["id"];
 
 export const USE_CASES = [
-  "Proyecto universitario",
+  "Mantenimiento o reparación",
   "Prototipo",
   "Repuesto",
   "Pieza funcional",
   "Producto para vender",
   "Prueba de concepto",
+  "Proyecto académico",
   "Otro",
 ];
 
@@ -146,14 +147,14 @@ export const SERVICES = [
   },
   {
     title: "Fabricación personalizada",
-    text: "Producción bajo pedido para proyectos académicos, profesionales y emprendimientos.",
+    text: "Producción de piezas y útiles en pequeñas cantidades para talleres, ingeniería y negocios.",
   },
 ];
 
 export const AUDIENCES = [
   {
-    title: "Estudiantes",
-    text: "Construye tus proyectos universitarios sin tener que comprar maquinaria.",
+    title: "Técnicos y talleres",
+    text: "Solicita piezas específicas para mantenimiento y reparación, con revisión de su aplicación.",
   },
   {
     title: "Ingenieros y profesionales",
@@ -194,16 +195,24 @@ export const MATERIALS = [
 
 export const FAQS = [
   {
+    q: "¿Cómo pago un diseño?",
+    a: "Registra la solicitud de compra y coordina el pago con el equipo desde Contacto indicando su referencia. No se cobra con tarjeta desde esta página. La descarga se habilita tras la verificación manual del pago.",
+  },
+  {
+    q: "¿Puedo vender mis diseños?",
+    a: "Envía el archivo, una portada, su documentación, complejidad, precio y condiciones comerciales propuestas. El equipo revisa y acuerda las condiciones contigo antes de publicar. No se prometen comisiones ni ingresos automáticos.",
+  },
+  {
     q: "¿Tengo que pagar para ver los diseños?",
-    a: "Puedes explorar el catálogo sin cuenta. Para descargar los archivos, publica una creación original y espera su aprobación.",
+    a: "Explorar el catálogo es gratuito y no requiere cuenta. Cada archivo tiene un precio; se descarga después de comprarlo y de que el equipo verifique el pago.",
   },
   {
-    q: "¿Qué desbloquea mi primer diseño?",
-    a: "Mientras tengas al menos un diseño aprobado, puedes descargar toda la colección. No gastas créditos por descarga.",
+    q: "¿Cómo se fija el precio de un diseño?",
+    a: "El creador propone un precio y el equipo lo revisa según el modelado, los componentes, ensambles y documentación. Cada diseño se compra por separado; publicar no habilita descargas de otros archivos.",
   },
   {
-    q: "¿Pueden fabricar un diseño de la comunidad?",
-    a: "Sí. Abre el diseño y selecciona Fabricar con ProtoLab. Te enviaremos una cotización antes de iniciar la fabricación.",
+    q: "¿Puedo comprar solo la pieza fabricada?",
+    a: "Sí. Abre el diseño y selecciona Cotizar pieza fabricada. La fabricación se cotiza por separado y no incluye automáticamente el archivo digital.",
   },
   {
     q: "¿Qué archivos puedo enviar?",
@@ -230,8 +239,12 @@ export const FAQS = [
     a: "Sí. Trabajamos desde una unidad; no hay cantidad mínima.",
   },
   {
-    q: "¿Realizan proyectos para estudiantes?",
-    a: "Sí, es nuestro público principal. Adaptamos parámetros para reducir costo en proyectos académicos.",
+    q: "¿A quiénes atiende ProtoLab?",
+    a: "Priorizamos técnicos, ingenieros, talleres y negocios que necesitan piezas o prototipos en pequeñas cantidades. También atendemos proyectos académicos y particulares, según la aplicación y la capacidad disponible.",
+  },
+  {
+    q: "¿Necesito una cuenta para estimar el precio?",
+    a: "Puedes obtener una estimación orientativa sin cuenta ni datos de contacto. Si no conoces peso u horas, elige un tamaño de referencia. Solo pedimos tus datos e iniciar sesión al guardar y enviar la solicitud a revisión.",
   },
   {
     q: "¿Pueden ayudarme a mejorar mi diseño?",

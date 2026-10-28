@@ -1,4 +1,4 @@
-import { materialEstimate } from "./material-pricing.ts";
+import { DEFAULT_WASTE_PERCENT, materialEstimate } from "./material-pricing.ts";
 
 export const ELECTRICITY_TARIFFS = {
   commercial: { label: "ENEE · General en baja tensión", rate: 6.5115 },
@@ -19,20 +19,45 @@ export type PrintCostSettings = {
   laborMinutes: string;
   laborHourly: string;
   extras: string;
+  wastePercent: string;
+  depreciationHourly: string;
+  packaging: string;
+  logistics: string;
 };
 export const DEFAULT_PRINT_SETTINGS: PrintCostSettings = {
   printer: "a1",
-  hours: "2",
+  hours: "",
   timeBasis: "piece",
   timeConfirmed: false,
   watts: "",
   tariffId: "commercial",
   customTariff: "",
-  machineHourly: "0",
-  laborMinutes: "0",
-  laborHourly: "0",
+  machineHourly: "",
+  laborMinutes: "",
+  laborHourly: "",
   extras: "0",
+  wastePercent: String(DEFAULT_WASTE_PERCENT),
+  // Pendientes de presupuestar. Vacío no significa costo real cero.
+  depreciationHourly: "",
+  packaging: "",
+  logistics: "",
 };
+// Vida productiva presupuestada por el negocio, no vida útil garantizada por Bambu.
+export function equipmentDepreciationHourly(
+  cost: number,
+  residual: number,
+  productiveHours: number,
+) {
+  if (
+    ![cost, residual, productiveHours].every(Number.isFinite) ||
+    cost <= 0 ||
+    residual < 0 ||
+    residual > cost ||
+    productiveHours <= 0
+  )
+    return null;
+  return (cost - residual) / productiveHours;
+}
 export function printerProfile(printer: PrinterId, material: string) {
   const id = material === "ABS" ? "x1c" : printer;
   return {
@@ -51,7 +76,9 @@ export function printEstimate(
   quantity: number,
   settings: PrintCostSettings,
 ) {
-  const materialCost = materialEstimate(material, grams, quantity);
+  const wastePercent = Number(settings.wastePercent);
+  if (!settings.wastePercent.trim()) return null;
+  const materialCost = materialEstimate(material, grams, quantity, wastePercent);
   if (!materialCost) return null;
   const profile = printerProfile(settings.printer, material);
   const hours = Number(settings.hours);
@@ -64,6 +91,9 @@ export function printEstimate(
   const laborMinutes = Number(settings.laborMinutes);
   const laborHourly = Number(settings.laborHourly);
   const extras = Number(settings.extras);
+  const depreciationHourly = Number(settings.depreciationHourly);
+  const packaging = Number(settings.packaging);
+  const logistics = Number(settings.logistics);
   if (
     !Number.isFinite(hours) ||
     hours <= 0 ||
@@ -74,9 +104,15 @@ export function printEstimate(
     !Number.isFinite(tariff) ||
     tariff <= 0 ||
     tariff > 100 ||
-    ![machineHourly, laborMinutes, laborHourly, extras].every(
-      (x) => Number.isFinite(x) && x >= 0 && x <= 100000,
-    ) ||
+    ![
+      machineHourly,
+      laborMinutes,
+      laborHourly,
+      extras,
+      depreciationHourly,
+      packaging,
+      logistics,
+    ].every((x) => Number.isFinite(x) && x >= 0 && x <= 100000) ||
     !["piece", "batch"].includes(settings.timeBasis)
   )
     return null;
@@ -88,7 +124,19 @@ export function printEstimate(
   const machineCents = cents(totalHours * machineHourly);
   const laborCents = cents((laborMinutes / 60) * laborHourly);
   const extrasCents = cents(extras);
-  const operatingCents = energyCents + machineCents + laborCents + extrasCents;
+  // machineHourly cubre uso/mantenimiento sin depreciación para evitar duplicarla.
+  const depreciationCents = cents(totalHours * depreciationHourly);
+  // Empaque y logística son por pedido, no por pieza ni hora.
+  const packagingCents = cents(packaging);
+  const logisticsCents = cents(logistics);
+  const operatingCents =
+    energyCents +
+    machineCents +
+    laborCents +
+    extrasCents +
+    depreciationCents +
+    packagingCents +
+    logisticsCents;
   const totalCents = cents(materialCost.total) + operatingCents;
   return {
     material: materialCost,
@@ -101,6 +149,21 @@ export function printEstimate(
     machine: machineCents / 100,
     labor: laborCents / 100,
     extras: extrasCents / 100,
+    depreciation: depreciationCents / 100,
+    packaging: packagingCents / 100,
+    logistics: logisticsCents / 100,
+    // El recargo del material no equivale a utilidad neta. Exponer omisiones
+    // al equipo sin confundir costos sin configurar con costos comprobados.
+    unconfiguredCosts: (
+      [
+        "machineHourly",
+        "laborMinutes",
+        "laborHourly",
+        "depreciationHourly",
+        "packaging",
+        "logistics",
+      ] as const
+    ).filter((key) => settings[key].trim() === ""),
     cost: (cents(materialCost.cost) + operatingCents) / 100,
     total: totalCents / 100,
     perPiece: totalCents / 100 / quantity,

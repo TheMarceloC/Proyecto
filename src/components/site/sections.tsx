@@ -121,9 +121,9 @@ export function ExamplesPreviewSection() {
     <section className="mx-auto max-w-7xl px-6 py-14">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <SectionHeading
-          eyebrow="Comunidad de creadores"
+          eyebrow="Catálogo y fabricación"
           title="De una buena idea a tu próxima pieza."
-          text="Un espacio para encontrar inspiración, compartir diseños y fabricar juntos."
+          text="Encuentra un diseño para comprar o encarga una pieza fabricada para tu proyecto."
         />
         <ActionLink to="/disenos" variant="ghost">
           Explorar la colección

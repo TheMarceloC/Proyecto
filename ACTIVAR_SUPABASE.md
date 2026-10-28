@@ -1,3 +1,7 @@
+# Actualización comercial del 27 de octubre de 2026
+
+La venta individual de archivos sustituye el desbloqueo por aportes. Sigue primero [VENTA_DE_DISENOS.md](VENTA_DE_DISENOS.md): se requiere la migración incremental `202610270001_design_commerce.sql` después de la migración inicial. Los pagos se coordinan y verifican manualmente; no hay pasarela conectada.
+
 # Activar las funciones de ProtoLab
 
 El código de la comunidad está preparado para Supabase Auth, PostgreSQL y Storage.
@@ -22,7 +26,7 @@ permite recorrer sus páginas, pero no registra cuentas ni confirma solicitudes.
 
 No hagas públicos los buckets y no añadas una política de lectura general.
 Las imágenes de diseños publicados se muestran con enlaces temporales. Los archivos
-CAD requieren comprobar la cuenta y la aportación aprobada antes de firmar su descarga.
+CAD requieren comprobar autoría, administración o compra verificada de ese diseño antes de firmar su descarga.
 
 ## 3. Conectar Vercel
 
@@ -66,6 +70,15 @@ con un proveedor de correo SMTP y un remitente autorizado. El correo por defecto
 de Supabase está limitado a los miembros del proyecto y no sirve para abrir el registro
 al público. El código no ha contratado ni configurado un proveedor SMTP.
 
+**Dos circuitos diferentes:** el SMTP configurado en Supabase Auth entrega correos
+de autenticación (por ejemplo, confirmar cuentas). No convierte un registro en
+`quotes` o `messages` en un correo al taller o al cliente. Para correos reales de
+solicitudes hay que integrar en el servidor un envío transaccional SMTP o API,
+remitente autorizado, credenciales solo de servidor y una cola/outbox con reintentos
+e idempotencia. Esa integración no está implementada en esta versión: el éxito del
+formulario confirma almacenamiento, no entrega de correo. No añadas claves SMTP
+al navegador ni a variables `VITE_*`.
+
 Consulta las [instrucciones oficiales de SMTP](https://supabase.com/docs/guides/auth/auth-smtp)
 y los [redirects de autenticación](https://supabase.com/docs/guides/auth/redirect-urls).
 
@@ -97,9 +110,8 @@ El formulario de registro no permite crearse una cuenta administradora.
 4. Confirma en /panel que el diseño queda En revisión y que no se ve en el catálogo público.
 5. Como administrador, descarga y revisa el archivo, la descripción y los derechos.
    Escribe las notas y aprueba la publicación solo cuando corresponda.
-6. El visitante ya puede ver el diseño. La cuenta que no ha aportado no puede descargarlo.
-7. El creador con al menos un diseño aprobado puede descargar los publicados.
-   No se consumen créditos y no se desbloquea una cuenta solo por cargar un archivo.
+6. El visitante puede ver el diseño y su precio. Cada comprador solicita y paga el archivo por separado.
+7. El administrador verifica el pago real desde Compras. Solo entonces el comprador puede descargar ese archivo. Publicar no habilita descargas de otros diseños.
 8. Desde el detalle, pulsa Fabricar con ProtoLab. Comprueba que la solicitud
    conserve el diseño elegido, los datos de contacto y los requisitos.
 9. Revisa la solicitud en /admin, guarda un precio y actualiza el estado.
@@ -139,6 +151,22 @@ bun run preview
 Las pruebas SQL usan PostgreSQL embebido (PGlite) con roles de prueba.
 Las pruebas de API verifican permisos con respuestas controladas de Supabase.
 No sustituyen la prueba de registro, carga y descarga en TU proyecto conectado.
+
+## Estimación sin cuenta y servicio sin configurar
+
+`/cotizar` permite calcular localmente una referencia antes de pedir contacto o
+cuenta. El paso final **Guardar y enviar** conserva autenticación y validación en
+el servidor. Los adjuntos permanecen seleccionados en el navegador hasta ese envío.
+
+Sin las tres variables (o con URL inválida), `GET /api/session` devuelve
+`{ configured: false, user: null }`. El catálogo público devuelve una lista vacía
+con las muestras locales disponibles. Los endpoints que requieren almacenamiento
+devuelven HTTP 503 y JSON con `configured: false`, sin fabricar un código de solicitud.
+Los formularios desactivan envío/registro y explican que se puede seguir estimando.
+Una sesión inaccesible por fallo de red muestra una opción de reintento. Que la
+configuración exista no prueba conectividad ni que se haya aplicado la migración.
+
+Modelo de costos y supuestos: [COSTOS_Y_COTIZACION.md](COSTOS_Y_COTIZACION.md).
 
 Referencias: [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security),
 [claves API](https://supabase.com/docs/guides/getting-started/api-keys),
