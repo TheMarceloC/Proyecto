@@ -12,10 +12,12 @@ export const NAV_LINKS = [
   { to: "/servicios", label: "Servicios" },
   { to: "/disenos", label: "Diseños" },
   { to: "/como-funciona", label: "Cómo funciona" },
+  { to: "/customer-journey", label: "Journey Map" },
   { to: "/seguimiento", label: "Seguimiento" },
 ] as const;
 
 export const FOOTER_LINKS = [
+  { to: "/customer-journey", label: "Customer Journey Map" },
   { to: "/servicios", label: "Servicios" },
   { to: "/disenos", label: "Diseños" },
   { to: "/materiales", label: "Materiales" },
