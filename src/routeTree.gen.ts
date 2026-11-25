@@ -16,6 +16,7 @@ import { Route as ComoFuncionaRouteImport } from './routes/como-funciona'
 import { Route as ContactoRouteImport } from './routes/contacto'
 import { Route as CotizarRouteImport } from './routes/cotizar'
 import { Route as CuentaRouteImport } from './routes/cuenta'
+import { Route as CustomerJourneyRouteImport } from './routes/customer-journey'
 import { Route as DisenosRouteImport } from './routes/disenos'
 import { Route as EjemplosRouteImport } from './routes/ejemplos'
 import { Route as FaqRouteImport } from './routes/faq'
@@ -59,6 +60,11 @@ const CotizarRoute = CotizarRouteImport.update({
 const CuentaRoute = CuentaRouteImport.update({
   id: '/cuenta',
   path: '/cuenta',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CustomerJourneyRoute = CustomerJourneyRouteImport.update({
+  id: '/customer-journey',
+  path: '/customer-journey',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DisenosRoute = DisenosRouteImport.update({
@@ -115,6 +121,7 @@ export interface FileRoutesByFullPath {
   '/contacto': typeof ContactoRoute
   '/cotizar': typeof CotizarRoute
   '/cuenta': typeof CuentaRoute
+  '/customer-journey': typeof CustomerJourneyRoute
   '/disenos': typeof DisenosRoute
   '/ejemplos': typeof EjemplosRoute
   '/faq': typeof FaqRoute
@@ -133,6 +140,7 @@ export interface FileRoutesByTo {
   '/contacto': typeof ContactoRoute
   '/cotizar': typeof CotizarRoute
   '/cuenta': typeof CuentaRoute
+  '/customer-journey': typeof CustomerJourneyRoute
   '/disenos': typeof DisenosRoute
   '/ejemplos': typeof EjemplosRoute
   '/faq': typeof FaqRoute
@@ -152,6 +160,7 @@ export interface FileRoutesById {
   '/contacto': typeof ContactoRoute
   '/cotizar': typeof CotizarRoute
   '/cuenta': typeof CuentaRoute
+  '/customer-journey': typeof CustomerJourneyRoute
   '/disenos': typeof DisenosRoute
   '/ejemplos': typeof EjemplosRoute
   '/faq': typeof FaqRoute
@@ -172,6 +181,7 @@ export interface FileRouteTypes {
     | '/contacto'
     | '/cotizar'
     | '/cuenta'
+    | '/customer-journey'
     | '/disenos'
     | '/ejemplos'
     | '/faq'
@@ -190,6 +200,7 @@ export interface FileRouteTypes {
     | '/contacto'
     | '/cotizar'
     | '/cuenta'
+    | '/customer-journey'
     | '/disenos'
     | '/ejemplos'
     | '/faq'
@@ -208,6 +219,7 @@ export interface FileRouteTypes {
     | '/contacto'
     | '/cotizar'
     | '/cuenta'
+    | '/customer-journey'
     | '/disenos'
     | '/ejemplos'
     | '/faq'
@@ -227,6 +239,7 @@ export interface RootRouteChildren {
   ContactoRoute: typeof ContactoRoute
   CotizarRoute: typeof CotizarRoute
   CuentaRoute: typeof CuentaRoute
+  CustomerJourneyRoute: typeof CustomerJourneyRoute
   DisenosRoute: typeof DisenosRoute
   EjemplosRoute: typeof EjemplosRoute
   FaqRoute: typeof FaqRoute
@@ -287,6 +300,13 @@ declare module '@tanstack/react-router' {
       path: '/cuenta'
       fullPath: '/cuenta'
       preLoaderRoute: typeof CuentaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/customer-journey': {
+      id: '/customer-journey'
+      path: '/customer-journey'
+      fullPath: '/customer-journey'
+      preLoaderRoute: typeof CustomerJourneyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/disenos': {
@@ -363,6 +383,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactoRoute: ContactoRoute,
   CotizarRoute: CotizarRoute,
   CuentaRoute: CuentaRoute,
+  CustomerJourneyRoute: CustomerJourneyRoute,
   DisenosRoute: DisenosRoute,
   EjemplosRoute: EjemplosRoute,
   FaqRoute: FaqRoute,
