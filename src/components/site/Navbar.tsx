@@ -28,7 +28,10 @@ export function Navbar() {
     <header className="sticky top-0 z-50 border-b border-border bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-2 px-4 sm:px-6">
         <Logo />
-        <nav className="hidden items-center gap-7 text-sm text-muted-foreground lg:flex">
+        <nav
+          aria-label="Navegación principal"
+          className="hidden items-center gap-5 text-sm text-muted-foreground xl:flex"
+        >
           {NAV_LINKS.map((l) => (
             <Link
               key={l.to}
@@ -51,14 +54,19 @@ export function Navbar() {
             type="button"
             aria-label="Abrir menú"
             onClick={() => setOpen((v) => !v)}
-            className="grid size-9 place-items-center rounded-lg border border-border text-foreground lg:hidden"
+            aria-expanded={open}
+            aria-controls="mobile-navigation"
+            className="grid size-9 place-items-center rounded-lg border border-border text-foreground xl:hidden"
           >
             {open ? <X className="size-4" /> : <Menu className="size-4" />}
           </button>
         </div>
       </div>
       {open ? (
-        <div className="animate-step-in border-t border-border bg-background/95 px-6 py-4 lg:hidden">
+        <div
+          id="mobile-navigation"
+          className="animate-step-in border-t border-border bg-background/95 px-6 py-4 xl:hidden"
+        >
           <div className="flex flex-col gap-1">
             {NAV_LINKS.map((l) => (
               <Link
