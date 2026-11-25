@@ -50,6 +50,18 @@ function How() {
         </div>
       </section>
       <ProcessSection />
+      <section className="mx-auto max-w-7xl px-6 py-8">
+        <GlassCard className="p-7 sm:p-9">
+          <h2 className="text-2xl font-bold">Cada paso, desde tu perspectiva.</h2>
+          <p className="mt-3 max-w-2xl text-muted-foreground">
+            Explora el Customer Journey Map: objetivos, dudas y oportunidades en el recorrido para
+            comprar un archivo 3D o fabricar una pieza.
+          </p>
+          <Link to="/customer-journey" className="mt-5 inline-block font-semibold text-accent">
+            Explorar el mapa del cliente
+          </Link>
+        </GlassCard>
+      </section>
       <CtaSection />
     </>
   );
