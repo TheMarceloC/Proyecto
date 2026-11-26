@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
-import { DESIGN_LICENSE } from "./design-commerce";
+import { DESIGN_LICENSE } from "./design-commerce.ts";
 
 const designFields =
   "id,owner_id,title,description,category,material,license,author_name,image_path,status,created_at,complexity,complexity_notes,price";
@@ -46,11 +46,11 @@ function clients() {
   };
 }
 class ApiError extends Error {
-  constructor(
-    public status: number,
-    message: string,
-  ) {
+  status: number;
+
+  constructor(status: number, message: string) {
     super(message);
+    this.status = status;
   }
 }
 function checked<T>(result: {

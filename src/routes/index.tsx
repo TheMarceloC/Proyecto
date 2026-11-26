@@ -1,131 +1,208 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowUpRight, ArrowRight, ShoppingBag, Boxes, Compass, Check } from "lucide-react";
-import { ActionLink, Chip, GlassCard } from "@/components/site/ui";
 import {
-  AdviceSection,
-  CtaSection,
-  ExamplesPreviewSection,
-  HomeStepsSection,
-  MaterialsSection,
-  QuickStartSection,
-} from "@/components/site/sections";
-import { PieceVisual } from "@/components/site/PieceVisual";
+  ArrowRight,
+  ArrowUpRight,
+  Box,
+  Download,
+  Factory,
+  PencilRuler,
+  Search,
+  ShoppingBag,
+} from "lucide-react";
+import { catalogImage, sellers } from "@/features/marketplace/catalog";
+import { useMarket } from "@/features/marketplace/store";
+import { ProductCard, SellerCard } from "@/features/marketplace/ui";
+
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "ProtoLab — Tu idea. Tu pieza. Fabricada." },
-      {
-        name: "description",
-        content:
-          "Compra diseños 3D o cotiza piezas personalizadas para ingeniería, talleres y negocios.",
-      },
-    ],
-  }),
+  head: () => ({ meta: [{ title: "ProtoLab | Marketplace de fabricación digital en Honduras" }] }),
   component: Home,
 });
+
+const options = [
+  {
+    title: "Diseños digitales",
+    description: "Modelos 3D y archivos descargables",
+    Icon: Download,
+    image: catalogImage("carcasa-iot", true),
+    to: "/marketplace",
+    search: { tipo: "digital" },
+  },
+  {
+    title: "Productos físicos",
+    description: "Piezas, accesorios y artículos de taller",
+    Icon: Box,
+    image: catalogImage("organizador-modular", true),
+    to: "/marketplace",
+    search: { tipo: "physical" },
+  },
+  {
+    title: "Fabricación personalizada",
+    description: "Encuentra un taller para tu proyecto",
+    Icon: Factory,
+    image: "/marketplace/workshops/taller-fdm.webp",
+    to: "/solicitar-fabricacion",
+  },
+  {
+    title: "Diseño y asesoría",
+    description: "Modelado CAD e ingeniería a medida",
+    Icon: PencilRuler,
+    image: "/marketplace/workshops/estudio-cad.webp",
+    to: "/servicios-diseno",
+  },
+] as const;
+const steps = [
+  {
+    Icon: Search,
+    title: "Encuentra lo que necesitas",
+    text: "Explora diseños, productos y perfiles de especialistas.",
+  },
+  {
+    Icon: ShoppingBag,
+    title: "Compra o solicita fabricación",
+    text: "Elige una publicación o comparte tu proyecto con un fabricante.",
+  },
+  {
+    Icon: Download,
+    title: "Descarga o coordina la entrega",
+    text: "Accede a tus archivos en tu biblioteca. Para piezas físicas, acuerda la entrega con el vendedor.",
+  },
+];
+
 function Home() {
+  const { state } = useMarket();
+  const featured = state.products
+    .filter((product) => product.featured && !product.hidden)
+    .slice(0, 8);
   return (
     <>
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute -right-24 -top-20 size-[580px] rounded-full bg-brand/10 blur-3xl" />
-        <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-6 pb-16 pt-12 lg:grid-cols-[1.05fr_1fr] lg:pt-20">
-          <div>
-            <Chip>El punto de encuentro entre ideas y piezas</Chip>
-            <h1 className="mt-7 text-5xl font-bold leading-[1.04] tracking-tight sm:text-6xl lg:text-7xl">
-              Tu idea.
-              <br />
-              Tu pieza.
-              <br />
-              <span className="text-gradient">Fabricada.</span>
-            </h1>
-            <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground">
-              Compra un diseño para tu impresora o encarga una pieza a tu medida. Acompañamos a
-              técnicos, ingenieros y talleres desde la idea hasta la fabricación.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <ActionLink to="/disenos" className="px-6 py-4 text-base">
-                Explorar diseños
-                <Compass className="size-5" />
-              </ActionLink>
-              <ActionLink to="/cotizar" variant="ghost" className="px-6 py-4 text-base">
-                Fabricar mi pieza
-                <ArrowUpRight className="size-5" />
-              </ActionLink>
+      <section className="market-container home-top">
+        <div className="market-hero">
+          <div className="hero-content">
+            <div className="hero-kicker">
+              <span /> Fabricación digital en Honduras
             </div>
-            <div className="mt-7 flex flex-wrap gap-x-5 gap-y-3 text-xs text-muted-foreground">
-              {["Desde una pieza", "Con o sin archivo 3D", "Revisión antes de fabricar"].map(
-                (s) => (
-                  <span key={s} className="flex items-center gap-2">
-                    <Check className="size-3.5 text-accent" />
-                    {s}
-                  </span>
-                ),
-              )}
+            <h1>
+              De tus ideas a<br /> <em>objetos reales.</em>
+            </h1>
+            <p>Descubre diseños, encuentra fabricantes y transforma tus proyectos con ProtoLab.</p>
+            <div className="button-row">
+              <Link to="/marketplace" className="market-button primary">
+                Explorar marketplace <ArrowRight size={18} />
+              </Link>
+              <Link to="/solicitar-fabricacion" className="market-button hero-secondary">
+                Solicitar fabricación
+              </Link>
             </div>
           </div>
-          <div className="relative mx-auto w-full max-w-lg lg:ml-4">
-            <div className="absolute -inset-5 -rotate-3 rounded-[3rem] border border-brand/20 bg-brand/5" />
-            <div className="relative rounded-[2rem] border border-border bg-background/50 p-4 sm:p-7">
-              <div className="mb-4 flex items-center justify-between">
-                <p className="label-caps">IDEAS QUE TOMAN FORMA</p>
-                <span className="rounded-full border border-accent/20 bg-accent/10 px-3 py-1 text-[10px] text-accent">
-                  Impresión 3D FDM
-                </span>
-              </div>
-              <PieceVisual
-                step={4}
-                material="PLA"
-                label="Del diseño digital a tu siguiente proyecto."
-              />
-              <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs text-muted-foreground">
-                {["01 / Diseña", "02 / Elige", "03 / Fabrica"].map((t) => (
-                  <span key={t} className="rounded-lg border border-border px-1 py-3">
-                    {t}
-                  </span>
-                ))}
-              </div>
-            </div>
+          <div className="hero-image">
+            <img
+              src="/marketplace/hero.webp"
+              width="1500"
+              height="1000"
+              fetchPriority="high"
+              alt="Impresora 3D fabricando un conjunto planetario azul"
+            />
           </div>
         </div>
       </section>
-      <section className="mx-auto grid max-w-7xl gap-4 px-6 pb-12 md:grid-cols-2">
-        {[
-          {
-            Icon: Boxes,
-            title: "¿No tienes impresora?",
-            text: "Elige un diseño o envía el tuyo. Revisamos la pieza y te cotizamos la fabricación.",
-            link: "/cotizar",
-            cta: "Quiero mi pieza fabricada",
-          },
-          {
-            Icon: ShoppingBag,
-            title: "¿Ya tienes una?",
-            text: "Compra el archivo que necesitas. Cada diseño tiene un precio según su complejidad y trabajo de desarrollo.",
-            link: "/disenos",
-            cta: "Encontrar un diseño para comprar",
-          },
-        ].map((card) => (
-          <Link key={card.title} to={card.link}>
-            <GlassCard className="group h-full p-7 transition hover:border-accent/30">
-              <card.Icon className="size-7 text-accent" />
-              <h2 className="mt-4 text-2xl font-bold">{card.title}</h2>
-              <p className="mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-                {card.text}
-              </p>
-              <span className="mt-5 flex items-center gap-2 text-sm font-semibold text-accent">
-                {card.cta}
-                <ArrowRight className="size-4 transition group-hover:translate-x-1" />
-              </span>
-            </GlassCard>
-          </Link>
-        ))}
+
+      <section className="market-container home-section home-categories">
+        <div className="group-heading">
+          <div>
+            <h2>Explora ProtoLab</h2>
+          </div>
+        </div>
+        <div className="category-grid">
+          {options.map(({ title, description, Icon, image, to, ...rest }) => (
+            <Link className="category-card" key={title} to={to} {...rest}>
+              <img src={image} alt="" loading="lazy" />
+              <div className="category-copy">
+                <span>
+                  <Icon size={17} />
+                  {title}
+                </span>
+                <small>{description}</small>
+              </div>
+              <ArrowUpRight className="category-arrow" size={17} />
+            </Link>
+          ))}
+        </div>
       </section>
-      <ExamplesPreviewSection />
-      <QuickStartSection />
-      <HomeStepsSection />
-      <MaterialsSection />
-      <AdviceSection />
-      <CtaSection />
+
+      <section className="market-container home-section">
+        <div className="group-heading">
+          <div>
+            <h2>Destacados del marketplace</h2>
+            <p>Diseños, piezas y herramientas de nuestros colaboradores.</p>
+          </div>
+          <Link to="/marketplace" className="text-action">
+            Ver marketplace <ArrowRight size={17} />
+          </Link>
+        </div>
+        <div className="product-grid">
+          {featured.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      </section>
+
+      <section className="home-band">
+        <div className="market-container home-section">
+          <div className="group-heading">
+            <div>
+              <h2>Fabricantes en Honduras</h2>
+              <p>Encuentra un taller por ciudad, tecnología y especialidad.</p>
+            </div>
+            <Link className="text-action" to="/fabricantes">
+              Ver fabricantes <ArrowRight size={17} />
+            </Link>
+          </div>
+          <div className="seller-grid">
+            {["protolab", "forma", "fusion"].map((id) => (
+              <SellerCard key={id} seller={sellers.find((seller) => seller.id === id)!} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="market-container home-section" id="como-funciona">
+        <div className="group-heading">
+          <div>
+            <h2>Cómo funciona</h2>
+          </div>
+        </div>
+        <div className="step-grid">
+          {steps.map(({ Icon, title, text }) => (
+            <article key={title}>
+              <span className="step-icon">
+                <Icon size={23} />
+              </span>
+              <h3>{title}</h3>
+              <p>{text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="market-container home-section seller-banner-wrap">
+        <div className="seller-banner">
+          <div>
+            <h2>Convierte tus habilidades y equipos en nuevas oportunidades.</h2>
+            <p>
+              Publica tus diseños, establece tus precios y conecta con clientes que buscan
+              fabricación digital.
+            </p>
+            <Link to="/vender" className="market-button light">
+              Comenzar a vender <ArrowRight size={18} />
+            </Link>
+          </div>
+          <img
+            src="/marketplace/workshops/taller-resina.webp"
+            alt="Banco de trabajo de fabricación digital"
+            loading="lazy"
+          />
+        </div>
+      </section>
     </>
   );
 }

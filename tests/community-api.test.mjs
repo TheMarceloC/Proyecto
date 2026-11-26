@@ -1,8 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import server from "../.vercel/output/functions/__server.func/index.mjs";
+import { communityApi } from "../src/lib/community.server.ts";
 
-test("API: compras individuales, archivos privados y límites de autorización", async () => {
+test("API histórica aislada: compras, archivos privados y límites de autorización", async () => {
   const originalFetch = globalThis.fetch;
   const names = [
     "SUPABASE_URL",
@@ -26,7 +26,7 @@ test("API: compras individuales, archivos privados y límites de autorización",
   let receivedPurchase;
   let receivedQuote;
   const call = (path, token, body, origin = "https://protolab.test") =>
-    server.fetch(
+    communityApi(
       new Request("https://protolab.test/api/" + path, {
         method: body === undefined ? "GET" : "POST",
         headers: {
@@ -35,7 +35,6 @@ test("API: compras individuales, archivos privados y límites de autorización",
         },
         ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       }),
-      {},
     );
   try {
     names.forEach((name) => delete process.env[name]);

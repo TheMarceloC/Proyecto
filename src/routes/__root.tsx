@@ -8,13 +8,14 @@ import {
   Scripts,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
+import marketCss from "@/features/marketplace/marketplace.css?url";
+
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
-import { FloatingQuote } from "@/components/site/FloatingQuote";
+import { MarketProvider } from "@/features/marketplace/store";
 import { Toaster } from "sonner";
 
 function NotFoundComponent() {
@@ -42,10 +43,6 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
-  useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
-
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="max-w-md text-center">
@@ -86,19 +83,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Cotiza, desarrolla y fabrica prototipos y piezas personalizadas sin tener tu propia maquinaria.",
+          "Compra diseños y productos, encuentra fabricantes y solicita piezas personalizadas en Honduras.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap",
-      },
+      { rel: "stylesheet", href: marketCss },
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
     ],
   }),
@@ -124,19 +116,21 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="flex min-h-screen flex-col">
-        <Navbar />
-        <main className="flex-1">
-          {/* Required: nested routes render here. */}
-          <Outlet />
-        </main>
-        <Footer />
-      </div>
-      <FloatingQuote />
-      <Toaster theme="dark" position="top-center" />
+      <MarketProvider>
+        <a className="skip-link" href="#contenido">
+          Saltar al contenido
+        </a>
+        <div className="flex min-h-screen flex-col">
+          <Navbar />
+          <main className="flex-1" id="contenido">
+            <Outlet />
+          </main>
+          <Footer />
+        </div>
+        <Toaster theme="light" position="bottom-right" richColors closeButton />
+      </MarketProvider>
     </QueryClientProvider>
   );
 }

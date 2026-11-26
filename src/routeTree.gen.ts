@@ -12,19 +12,34 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AsesoriaRouteImport } from './routes/asesoria'
+import { Route as CalculadoraRouteImport } from './routes/calculadora'
+import { Route as CarritoRouteImport } from './routes/carrito'
+import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ComoFuncionaRouteImport } from './routes/como-funciona'
 import { Route as ContactoRouteImport } from './routes/contacto'
 import { Route as CotizarRouteImport } from './routes/cotizar'
 import { Route as CuentaRouteImport } from './routes/cuenta'
 import { Route as DisenosRouteImport } from './routes/disenos'
 import { Route as EjemplosRouteImport } from './routes/ejemplos'
+import { Route as FabricantesRouteImport } from './routes/fabricantes'
 import { Route as FaqRouteImport } from './routes/faq'
+import { Route as FavoritosRouteImport } from './routes/favoritos'
+import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as MaterialesRouteImport } from './routes/materiales'
+import { Route as NotificacionesRouteImport } from './routes/notificaciones'
 import { Route as PanelRouteImport } from './routes/panel'
+import { Route as PrivacidadRouteImport } from './routes/privacidad'
 import { Route as PublicarRouteImport } from './routes/publicar'
 import { Route as SeguimientoRouteImport } from './routes/seguimiento'
 import { Route as ServiciosRouteImport } from './routes/servicios'
+import { Route as ServiciosDisenoRouteImport } from './routes/servicios-diseno'
+import { Route as SolicitarFabricacionRouteImport } from './routes/solicitar-fabricacion'
+import { Route as TerminosRouteImport } from './routes/terminos'
+import { Route as VenderRouteImport } from './routes/vender'
+import { Route as CompraIdRouteImport } from './routes/compra.$id'
 import { Route as DisenoIdRouteImport } from './routes/diseno.$id'
+import { Route as FabricanteIdRouteImport } from './routes/fabricante.$id'
+import { Route as ProductoIdRouteImport } from './routes/producto.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -39,6 +54,21 @@ const AdminRoute = AdminRouteImport.update({
 const AsesoriaRoute = AsesoriaRouteImport.update({
   id: '/asesoria',
   path: '/asesoria',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalculadoraRoute = CalculadoraRouteImport.update({
+  id: '/calculadora',
+  path: '/calculadora',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CarritoRoute = CarritoRouteImport.update({
+  id: '/carrito',
+  path: '/carrito',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ComoFuncionaRoute = ComoFuncionaRouteImport.update({
@@ -71,9 +101,24 @@ const EjemplosRoute = EjemplosRouteImport.update({
   path: '/ejemplos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FabricantesRoute = FabricantesRouteImport.update({
+  id: '/fabricantes',
+  path: '/fabricantes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FaqRoute = FaqRouteImport.update({
   id: '/faq',
   path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FavoritosRoute = FavoritosRouteImport.update({
+  id: '/favoritos',
+  path: '/favoritos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketplaceRoute = MarketplaceRouteImport.update({
+  id: '/marketplace',
+  path: '/marketplace',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MaterialesRoute = MaterialesRouteImport.update({
@@ -81,9 +126,19 @@ const MaterialesRoute = MaterialesRouteImport.update({
   path: '/materiales',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NotificacionesRoute = NotificacionesRouteImport.update({
+  id: '/notificaciones',
+  path: '/notificaciones',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PanelRoute = PanelRouteImport.update({
   id: '/panel',
   path: '/panel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacidadRoute = PrivacidadRouteImport.update({
+  id: '/privacidad',
+  path: '/privacidad',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PublicarRoute = PublicarRouteImport.update({
@@ -101,9 +156,44 @@ const ServiciosRoute = ServiciosRouteImport.update({
   path: '/servicios',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ServiciosDisenoRoute = ServiciosDisenoRouteImport.update({
+  id: '/servicios-diseno',
+  path: '/servicios-diseno',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SolicitarFabricacionRoute = SolicitarFabricacionRouteImport.update({
+  id: '/solicitar-fabricacion',
+  path: '/solicitar-fabricacion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TerminosRoute = TerminosRouteImport.update({
+  id: '/terminos',
+  path: '/terminos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VenderRoute = VenderRouteImport.update({
+  id: '/vender',
+  path: '/vender',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompraIdRoute = CompraIdRouteImport.update({
+  id: '/compra/$id',
+  path: '/compra/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DisenoIdRoute = DisenoIdRouteImport.update({
   id: '/diseno/$id',
   path: '/diseno/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FabricanteIdRoute = FabricanteIdRouteImport.update({
+  id: '/fabricante/$id',
+  path: '/fabricante/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductoIdRoute = ProductoIdRouteImport.update({
+  id: '/producto/$id',
+  path: '/producto/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -111,56 +201,101 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/asesoria': typeof AsesoriaRoute
+  '/calculadora': typeof CalculadoraRoute
+  '/carrito': typeof CarritoRoute
+  '/checkout': typeof CheckoutRoute
   '/como-funciona': typeof ComoFuncionaRoute
   '/contacto': typeof ContactoRoute
   '/cotizar': typeof CotizarRoute
   '/cuenta': typeof CuentaRoute
   '/disenos': typeof DisenosRoute
   '/ejemplos': typeof EjemplosRoute
+  '/fabricantes': typeof FabricantesRoute
   '/faq': typeof FaqRoute
+  '/favoritos': typeof FavoritosRoute
+  '/marketplace': typeof MarketplaceRoute
   '/materiales': typeof MaterialesRoute
+  '/notificaciones': typeof NotificacionesRoute
   '/panel': typeof PanelRoute
+  '/privacidad': typeof PrivacidadRoute
   '/publicar': typeof PublicarRoute
   '/seguimiento': typeof SeguimientoRoute
   '/servicios': typeof ServiciosRoute
+  '/servicios-diseno': typeof ServiciosDisenoRoute
+  '/solicitar-fabricacion': typeof SolicitarFabricacionRoute
+  '/terminos': typeof TerminosRoute
+  '/vender': typeof VenderRoute
+  '/compra/$id': typeof CompraIdRoute
   '/diseno/$id': typeof DisenoIdRoute
+  '/fabricante/$id': typeof FabricanteIdRoute
+  '/producto/$id': typeof ProductoIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/asesoria': typeof AsesoriaRoute
+  '/calculadora': typeof CalculadoraRoute
+  '/carrito': typeof CarritoRoute
+  '/checkout': typeof CheckoutRoute
   '/como-funciona': typeof ComoFuncionaRoute
   '/contacto': typeof ContactoRoute
   '/cotizar': typeof CotizarRoute
   '/cuenta': typeof CuentaRoute
   '/disenos': typeof DisenosRoute
   '/ejemplos': typeof EjemplosRoute
+  '/fabricantes': typeof FabricantesRoute
   '/faq': typeof FaqRoute
+  '/favoritos': typeof FavoritosRoute
+  '/marketplace': typeof MarketplaceRoute
   '/materiales': typeof MaterialesRoute
+  '/notificaciones': typeof NotificacionesRoute
   '/panel': typeof PanelRoute
+  '/privacidad': typeof PrivacidadRoute
   '/publicar': typeof PublicarRoute
   '/seguimiento': typeof SeguimientoRoute
   '/servicios': typeof ServiciosRoute
+  '/servicios-diseno': typeof ServiciosDisenoRoute
+  '/solicitar-fabricacion': typeof SolicitarFabricacionRoute
+  '/terminos': typeof TerminosRoute
+  '/vender': typeof VenderRoute
+  '/compra/$id': typeof CompraIdRoute
   '/diseno/$id': typeof DisenoIdRoute
+  '/fabricante/$id': typeof FabricanteIdRoute
+  '/producto/$id': typeof ProductoIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/asesoria': typeof AsesoriaRoute
+  '/calculadora': typeof CalculadoraRoute
+  '/carrito': typeof CarritoRoute
+  '/checkout': typeof CheckoutRoute
   '/como-funciona': typeof ComoFuncionaRoute
   '/contacto': typeof ContactoRoute
   '/cotizar': typeof CotizarRoute
   '/cuenta': typeof CuentaRoute
   '/disenos': typeof DisenosRoute
   '/ejemplos': typeof EjemplosRoute
+  '/fabricantes': typeof FabricantesRoute
   '/faq': typeof FaqRoute
+  '/favoritos': typeof FavoritosRoute
+  '/marketplace': typeof MarketplaceRoute
   '/materiales': typeof MaterialesRoute
+  '/notificaciones': typeof NotificacionesRoute
   '/panel': typeof PanelRoute
+  '/privacidad': typeof PrivacidadRoute
   '/publicar': typeof PublicarRoute
   '/seguimiento': typeof SeguimientoRoute
   '/servicios': typeof ServiciosRoute
+  '/servicios-diseno': typeof ServiciosDisenoRoute
+  '/solicitar-fabricacion': typeof SolicitarFabricacionRoute
+  '/terminos': typeof TerminosRoute
+  '/vender': typeof VenderRoute
+  '/compra/$id': typeof CompraIdRoute
   '/diseno/$id': typeof DisenoIdRoute
+  '/fabricante/$id': typeof FabricanteIdRoute
+  '/producto/$id': typeof ProductoIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -168,74 +303,134 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/asesoria'
+    | '/calculadora'
+    | '/carrito'
+    | '/checkout'
     | '/como-funciona'
     | '/contacto'
     | '/cotizar'
     | '/cuenta'
     | '/disenos'
     | '/ejemplos'
+    | '/fabricantes'
     | '/faq'
+    | '/favoritos'
+    | '/marketplace'
     | '/materiales'
+    | '/notificaciones'
     | '/panel'
+    | '/privacidad'
     | '/publicar'
     | '/seguimiento'
     | '/servicios'
+    | '/servicios-diseno'
+    | '/solicitar-fabricacion'
+    | '/terminos'
+    | '/vender'
+    | '/compra/$id'
     | '/diseno/$id'
+    | '/fabricante/$id'
+    | '/producto/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
     | '/asesoria'
+    | '/calculadora'
+    | '/carrito'
+    | '/checkout'
     | '/como-funciona'
     | '/contacto'
     | '/cotizar'
     | '/cuenta'
     | '/disenos'
     | '/ejemplos'
+    | '/fabricantes'
     | '/faq'
+    | '/favoritos'
+    | '/marketplace'
     | '/materiales'
+    | '/notificaciones'
     | '/panel'
+    | '/privacidad'
     | '/publicar'
     | '/seguimiento'
     | '/servicios'
+    | '/servicios-diseno'
+    | '/solicitar-fabricacion'
+    | '/terminos'
+    | '/vender'
+    | '/compra/$id'
     | '/diseno/$id'
+    | '/fabricante/$id'
+    | '/producto/$id'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/asesoria'
+    | '/calculadora'
+    | '/carrito'
+    | '/checkout'
     | '/como-funciona'
     | '/contacto'
     | '/cotizar'
     | '/cuenta'
     | '/disenos'
     | '/ejemplos'
+    | '/fabricantes'
     | '/faq'
+    | '/favoritos'
+    | '/marketplace'
     | '/materiales'
+    | '/notificaciones'
     | '/panel'
+    | '/privacidad'
     | '/publicar'
     | '/seguimiento'
     | '/servicios'
+    | '/servicios-diseno'
+    | '/solicitar-fabricacion'
+    | '/terminos'
+    | '/vender'
+    | '/compra/$id'
     | '/diseno/$id'
+    | '/fabricante/$id'
+    | '/producto/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   AsesoriaRoute: typeof AsesoriaRoute
+  CalculadoraRoute: typeof CalculadoraRoute
+  CarritoRoute: typeof CarritoRoute
+  CheckoutRoute: typeof CheckoutRoute
   ComoFuncionaRoute: typeof ComoFuncionaRoute
   ContactoRoute: typeof ContactoRoute
   CotizarRoute: typeof CotizarRoute
   CuentaRoute: typeof CuentaRoute
   DisenosRoute: typeof DisenosRoute
   EjemplosRoute: typeof EjemplosRoute
+  FabricantesRoute: typeof FabricantesRoute
   FaqRoute: typeof FaqRoute
+  FavoritosRoute: typeof FavoritosRoute
+  MarketplaceRoute: typeof MarketplaceRoute
   MaterialesRoute: typeof MaterialesRoute
+  NotificacionesRoute: typeof NotificacionesRoute
   PanelRoute: typeof PanelRoute
+  PrivacidadRoute: typeof PrivacidadRoute
   PublicarRoute: typeof PublicarRoute
   SeguimientoRoute: typeof SeguimientoRoute
   ServiciosRoute: typeof ServiciosRoute
+  ServiciosDisenoRoute: typeof ServiciosDisenoRoute
+  SolicitarFabricacionRoute: typeof SolicitarFabricacionRoute
+  TerminosRoute: typeof TerminosRoute
+  VenderRoute: typeof VenderRoute
+  CompraIdRoute: typeof CompraIdRoute
   DisenoIdRoute: typeof DisenoIdRoute
+  FabricanteIdRoute: typeof FabricanteIdRoute
+  ProductoIdRoute: typeof ProductoIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -259,6 +454,27 @@ declare module '@tanstack/react-router' {
       path: '/asesoria'
       fullPath: '/asesoria'
       preLoaderRoute: typeof AsesoriaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calculadora': {
+      id: '/calculadora'
+      path: '/calculadora'
+      fullPath: '/calculadora'
+      preLoaderRoute: typeof CalculadoraRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/carrito': {
+      id: '/carrito'
+      path: '/carrito'
+      fullPath: '/carrito'
+      preLoaderRoute: typeof CarritoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/como-funciona': {
@@ -303,11 +519,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EjemplosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/fabricantes': {
+      id: '/fabricantes'
+      path: '/fabricantes'
+      fullPath: '/fabricantes'
+      preLoaderRoute: typeof FabricantesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/faq': {
       id: '/faq'
       path: '/faq'
       fullPath: '/faq'
       preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/favoritos': {
+      id: '/favoritos'
+      path: '/favoritos'
+      fullPath: '/favoritos'
+      preLoaderRoute: typeof FavoritosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketplace': {
+      id: '/marketplace'
+      path: '/marketplace'
+      fullPath: '/marketplace'
+      preLoaderRoute: typeof MarketplaceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/materiales': {
@@ -317,11 +554,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MaterialesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/notificaciones': {
+      id: '/notificaciones'
+      path: '/notificaciones'
+      fullPath: '/notificaciones'
+      preLoaderRoute: typeof NotificacionesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/panel': {
       id: '/panel'
       path: '/panel'
       fullPath: '/panel'
       preLoaderRoute: typeof PanelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacidad': {
+      id: '/privacidad'
+      path: '/privacidad'
+      fullPath: '/privacidad'
+      preLoaderRoute: typeof PrivacidadRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/publicar': {
@@ -345,11 +596,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServiciosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/servicios-diseno': {
+      id: '/servicios-diseno'
+      path: '/servicios-diseno'
+      fullPath: '/servicios-diseno'
+      preLoaderRoute: typeof ServiciosDisenoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/solicitar-fabricacion': {
+      id: '/solicitar-fabricacion'
+      path: '/solicitar-fabricacion'
+      fullPath: '/solicitar-fabricacion'
+      preLoaderRoute: typeof SolicitarFabricacionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terminos': {
+      id: '/terminos'
+      path: '/terminos'
+      fullPath: '/terminos'
+      preLoaderRoute: typeof TerminosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vender': {
+      id: '/vender'
+      path: '/vender'
+      fullPath: '/vender'
+      preLoaderRoute: typeof VenderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compra/$id': {
+      id: '/compra/$id'
+      path: '/compra/$id'
+      fullPath: '/compra/$id'
+      preLoaderRoute: typeof CompraIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/diseno/$id': {
       id: '/diseno/$id'
       path: '/diseno/$id'
       fullPath: '/diseno/$id'
       preLoaderRoute: typeof DisenoIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fabricante/$id': {
+      id: '/fabricante/$id'
+      path: '/fabricante/$id'
+      fullPath: '/fabricante/$id'
+      preLoaderRoute: typeof FabricanteIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/producto/$id': {
+      id: '/producto/$id'
+      path: '/producto/$id'
+      fullPath: '/producto/$id'
+      preLoaderRoute: typeof ProductoIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -359,19 +659,34 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AsesoriaRoute: AsesoriaRoute,
+  CalculadoraRoute: CalculadoraRoute,
+  CarritoRoute: CarritoRoute,
+  CheckoutRoute: CheckoutRoute,
   ComoFuncionaRoute: ComoFuncionaRoute,
   ContactoRoute: ContactoRoute,
   CotizarRoute: CotizarRoute,
   CuentaRoute: CuentaRoute,
   DisenosRoute: DisenosRoute,
   EjemplosRoute: EjemplosRoute,
+  FabricantesRoute: FabricantesRoute,
   FaqRoute: FaqRoute,
+  FavoritosRoute: FavoritosRoute,
+  MarketplaceRoute: MarketplaceRoute,
   MaterialesRoute: MaterialesRoute,
+  NotificacionesRoute: NotificacionesRoute,
   PanelRoute: PanelRoute,
+  PrivacidadRoute: PrivacidadRoute,
   PublicarRoute: PublicarRoute,
   SeguimientoRoute: SeguimientoRoute,
   ServiciosRoute: ServiciosRoute,
+  ServiciosDisenoRoute: ServiciosDisenoRoute,
+  SolicitarFabricacionRoute: SolicitarFabricacionRoute,
+  TerminosRoute: TerminosRoute,
+  VenderRoute: VenderRoute,
+  CompraIdRoute: CompraIdRoute,
   DisenoIdRoute: DisenoIdRoute,
+  FabricanteIdRoute: FabricanteIdRoute,
+  ProductoIdRoute: ProductoIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

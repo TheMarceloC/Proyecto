@@ -1,87 +1,201 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
-import { BRAND, NAV_LINKS } from "@/lib/protolab";
-import { btnStyles } from "./ui";
-import { MemberButton } from "@/components/community/Account";
+import {
+  ArrowUpRight,
+  Bell,
+  Check,
+  ChevronDown,
+  Heart,
+  Menu,
+  Search,
+  ShoppingBag,
+  UserRound,
+  X,
+} from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { accounts } from "@/features/marketplace/catalog";
+import { SearchBox } from "@/features/marketplace/ui";
+import { useMarket } from "@/features/marketplace/store";
+
+const navigation = [
+  { to: "/", label: "Inicio" },
+  { to: "/marketplace", label: "Marketplace" },
+  { to: "/fabricantes", label: "Fabricantes" },
+  { to: "/solicitar-fabricacion", label: "Solicitar fabricación" },
+  { to: "/servicios-diseno", label: "Servicios de diseño" },
+  { to: "/calculadora", label: "Calculadora de costos" },
+  { to: "/vender", label: "Conviértete en vendedor" },
+] as const;
 
 export function Logo() {
   return (
-    <Link to="/" className="flex items-center gap-2.5">
-      <img
-        src="/protolab-symbol.svg"
-        alt=""
-        aria-hidden="true"
-        width={40}
-        height={40}
-        className="size-10 shrink-0"
-      />
-      <span className="font-display font-bold tracking-tight text-foreground">{BRAND.name}</span>
+    <Link to="/" className="market-logo" aria-label="ProtoLab, inicio">
+      <img src="/protolab-symbol.svg" alt="" width={34} height={34} />
+      <span>
+        Proto<span>Lab</span>
+      </span>
     </Link>
   );
 }
 
 export function Navbar() {
-  const [open, setOpen] = useState(false);
-
+  const [menu, setMenu] = useState(false);
+  const [search, setSearch] = useState(false);
+  const [profile, setProfile] = useState(false);
+  const { account, cart, notifications, ready, switchAccount } = useMarket();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const count = cart.reduce((sum, line) => sum + line.quantity, 0);
+  const unread = notifications.filter((item) => !item.read).length;
+  const homeProfile = account.id === "admin" ? "/admin" : "/cuenta";
+  const isMarketplace =
+    location.pathname === "/marketplace" || location.pathname.startsWith("/producto/");
+  const navItems = navigation.map((item) => (
+    <Link
+      key={item.to}
+      to={item.to}
+      onClick={() => {
+        setMenu(false);
+        setSearch(false);
+      }}
+      className={[
+        item.to === "/marketplace" && isMarketplace && "nav-active",
+        item.to === "/solicitar-fabricacion" && "desktop-request",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      activeOptions={{ exact: item.to === "/" }}
+      activeProps={{ className: "nav-active" }}
+    >
+      {item.label}
+    </Link>
+  ));
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/70 backdrop-blur-xl">
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-2 px-4 sm:px-6">
+    <header className="market-header">
+      <div className="market-container header-top">
         <Logo />
-        <nav className="hidden items-center gap-7 text-sm text-muted-foreground lg:flex">
-          {NAV_LINKS.map((l) => (
-            <Link
-              key={l.to}
-              to={l.to}
-              className="transition-colors hover:text-foreground"
-              activeProps={{ className: "text-foreground font-medium" }}
-              activeOptions={{ exact: l.to === "/" }}
-            >
-              {l.label}
-            </Link>
-          ))}
-        </nav>
-        <div className="flex items-center gap-3">
-          <MemberButton />
-          <Link to="/cotizar" className={`${btnStyles.primary} px-4 py-2`}>
-            <span className="sm:hidden">Cotizar</span>
-            <span className="hidden sm:inline">Cotizar pieza</span>
-          </Link>
+        <div className="desktop-search">
+          <SearchBox />
+        </div>
+        <div className="utility-nav">
           <button
+            className="round-icon mobile-search"
             type="button"
-            aria-label="Abrir menú"
-            onClick={() => setOpen((v) => !v)}
-            className="grid size-9 place-items-center rounded-lg border border-border text-foreground lg:hidden"
+            aria-label={search ? "Cerrar búsqueda" : "Buscar"}
+            aria-expanded={search}
+            onClick={() => {
+              setSearch(!search);
+              setMenu(false);
+            }}
           >
-            {open ? <X className="size-4" /> : <Menu className="size-4" />}
+            {search ? <X size={19} /> : <Search size={19} />}
+          </button>
+          <Link className="round-icon" aria-label="Favoritos" title="Favoritos" to="/favoritos">
+            <Heart size={20} />
+          </Link>
+          <Link
+            className="round-icon"
+            aria-label={"Carrito" + (count ? " (" + count + ")" : "")}
+            title="Carrito"
+            to="/carrito"
+          >
+            <ShoppingBag size={20} />
+            {count > 0 && <span className="utility-count">{count}</span>}
+          </Link>
+          <Link
+            className="round-icon"
+            aria-label={"Notificaciones" + (unread ? " (" + unread + " sin leer)" : "")}
+            title="Notificaciones"
+            to="/notificaciones"
+          >
+            <Bell size={20} />
+            {unread > 0 && <span className="utility-dot" />}
+          </Link>
+          <Popover open={profile} onOpenChange={setProfile}>
+            <PopoverTrigger asChild>
+              <button type="button" className="profile-trigger" aria-label="Perfil de usuario">
+                <UserRound size={19} />
+                <span>{account.id === "daniel" ? "Mi cuenta" : account.name}</span>
+                <ChevronDown className="profile-chevron" size={14} />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="market-popover" align="end" sideOffset={10}>
+              <div className="profile-current">
+                <strong>{account.name}</strong>
+                <small>{account.role}</small>
+              </div>
+              <Link
+                className="profile-home-link"
+                to={homeProfile}
+                onClick={() => setProfile(false)}
+              >
+                {account.id === "admin" ? "Panel de administración" : "Ir a mi cuenta"}{" "}
+                <ArrowUpRight size={15} />
+              </Link>
+              <div className="profile-list">
+                <p>Cambiar cuenta</p>
+                {accounts.map((entry) => (
+                  <button
+                    type="button"
+                    key={entry.id}
+                    disabled={!ready}
+                    onClick={() => {
+                      switchAccount(entry.id);
+                      setProfile(false);
+                      void navigate({ to: entry.id === "admin" ? "/admin" : "/cuenta" });
+                    }}
+                  >
+                    <span>
+                      <strong>{entry.name}</strong>
+                      <small>{entry.role}</small>
+                    </span>
+                    {entry.id === account.id && <Check size={17} />}
+                  </button>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+          <button
+            className="round-icon mobile-menu"
+            type="button"
+            aria-label={menu ? "Cerrar menú" : "Abrir menú"}
+            aria-expanded={menu}
+            onClick={() => {
+              setMenu(!menu);
+              setSearch(false);
+            }}
+          >
+            {menu ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
-      {open ? (
-        <div className="animate-step-in border-t border-border bg-background/95 px-6 py-4 lg:hidden">
-          <div className="flex flex-col gap-1">
-            {NAV_LINKS.map((l) => (
-              <Link
-                key={l.to}
-                to={l.to}
-                onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-2.5 text-sm text-muted-foreground hover:bg-white/5 hover:text-foreground"
-                activeProps={{ className: "text-foreground bg-white/5" }}
-                activeOptions={{ exact: l.to === "/" }}
-              >
-                {l.label}
-              </Link>
-            ))}
-            <Link
-              to="/cuenta"
-              onClick={() => setOpen(false)}
-              className="rounded-lg px-3 py-2.5 text-sm text-muted-foreground hover:bg-white/5 hover:text-foreground"
-            >
-              Mi cuenta
-            </Link>
-          </div>
+      <div className="header-nav-row">
+        <div className="market-container nav-inner">
+          <nav className="desktop-nav" aria-label="Navegación principal">
+            {navItems}
+          </nav>
+          <Link
+            className="nav-request"
+            to="/solicitar-fabricacion"
+            onClick={() => {
+              setMenu(false);
+              setSearch(false);
+            }}
+          >
+            Solicitar fabricación <ArrowUpRight size={15} />
+          </Link>
         </div>
-      ) : null}
+      </div>
+      {search && (
+        <div className="market-container mobile-search-panel" key={location.href}>
+          <SearchBox />
+        </div>
+      )}
+      {menu && (
+        <nav className="market-container mobile-nav" aria-label="Navegación principal">
+          {navItems}
+        </nav>
+      )}
     </header>
   );
 }

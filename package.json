@@ -13,6 +13,7 @@
     "test:catalog": "node --test tests/catalog-availability.test.mjs",
     "test:policies": "node --test tests/community-policies.test.mjs",
     "test:api": "node --test tests/community-api.test.mjs",
+    "check": "tsc --noEmit",
     "dev": "vite dev",
     "build": "vite build",
     "build:dev": "vite build --mode development",

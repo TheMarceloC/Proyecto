@@ -1,39 +1,88 @@
 import { Link } from "@tanstack/react-router";
-import { BRAND, FOOTER_LINKS } from "@/lib/protolab";
+import { ArrowUpRight, Globe2, Share2 } from "lucide-react";
+import { toast } from "sonner";
 import { Logo } from "./Navbar";
+
+const sections = [
+  {
+    name: "Explora",
+    items: [
+      { to: "/marketplace", label: "Marketplace" },
+      { to: "/fabricantes", label: "Fabricantes" },
+      { to: "/servicios-diseno", label: "Servicios de diseño" },
+      { to: "/vender", label: "Vender en ProtoLab" },
+    ],
+  },
+  {
+    name: "Recursos",
+    items: [
+      { to: "/como-funciona", label: "Cómo funciona" },
+      { to: "/calculadora", label: "Calculadora de costos" },
+      { to: "/materiales", label: "Materiales" },
+      { to: "/faq", label: "Ayuda" },
+    ],
+  },
+  {
+    name: "ProtoLab",
+    items: [
+      { to: "/contacto", label: "Contacto" },
+      { to: "/terminos", label: "Términos y condiciones" },
+      { to: "/privacidad", label: "Privacidad" },
+    ],
+  },
+] as const;
+
+async function share() {
+  const url = window.location.origin;
+  try {
+    if (navigator.share) await navigator.share({ title: "ProtoLab", url });
+    else {
+      await navigator.clipboard.writeText(url);
+      toast.success("Enlace copiado");
+    }
+  } catch (error) {
+    if (!(error instanceof DOMException && error.name === "AbortError"))
+      toast.error("Puedes compartir ProtoLab copiando la dirección del navegador.");
+  }
+}
+
 export function Footer() {
   return (
-    <footer className="mt-10 border-t border-border pb-24">
-      <div className="mx-auto grid max-w-7xl gap-8 px-6 py-12 md:grid-cols-3">
-        <div>
+    <footer className="market-footer">
+      <div className="market-container footer-grid">
+        <div className="footer-brand">
           <Logo />
-          <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
-            Diseños con valor. Fabricación a tu medida.
-          </p>
+          <p>Tu idea. Tu pieza. Fabricada.</p>
+          <span>
+            <Globe2 size={15} /> Honduras · HNL
+          </span>
         </div>
-        <nav
-          aria-label="Enlaces del pie"
-          className="grid grid-cols-2 gap-y-3 text-sm text-muted-foreground"
-        >
-          {FOOTER_LINKS.map((l) => (
-            <Link key={l.to} to={l.to} className="hover:text-accent">
-              {l.label}
-            </Link>
-          ))}
-        </nav>
-        <div>
-          <p className="label-caps text-accent">Crea con nosotros</p>
-          <p className="mt-3 text-sm text-muted-foreground">
-            Propón un diseño para vender o encuentra la pieza que necesitas.
-          </p>
-          <Link to="/publicar" className="mt-4 inline-block text-sm font-semibold text-accent">
-            Publicar un diseño ↗
-          </Link>
-          <p className="mt-5 text-xs text-muted-foreground">{BRAND.country}</p>
-        </div>
+        {sections.map((section) => (
+          <nav aria-label={section.name} key={section.name}>
+            <h3>{section.name}</h3>
+            {section.items.map((item) => (
+              <Link key={item.to} to={item.to}>
+                {item.label}
+              </Link>
+            ))}
+            {section.name === "ProtoLab" && (
+              <a
+                className="footer-social"
+                href="https://linktr.ee/pprotolab"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Redes sociales <ArrowUpRight size={13} />
+              </a>
+            )}
+          </nav>
+        ))}
       </div>
-      <div className="mx-auto max-w-7xl border-t border-border px-6 pt-6 text-xs text-muted-foreground">
-        © {new Date().getFullYear()} ProtoLab · Diseña. Elige. Fabrica.
+      <div className="market-container footer-bottom">
+        <span>© 2026 ProtoLab</span>
+        <button type="button" onClick={() => void share()}>
+          <Share2 size={15} /> Compartir ProtoLab <ArrowUpRight size={14} />
+        </button>
       </div>
     </footer>
   );

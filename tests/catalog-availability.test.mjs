@@ -3,75 +3,98 @@ import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import server from "../.vercel/output/functions/__server.func/index.mjs";
+import { products, sellers } from "../src/features/marketplace/catalog.ts";
 
-test("solo el catálogo demostrativo muestra precios de ejemplo y no se exponen márgenes", async () => {
-  for (const route of ["/", "/cotizar", "/disenos", "/servicios", "/materiales", "/faq"]) {
-    const response = await server.fetch(new Request("http://localhost" + route), {
-      waitUntil() {},
-    });
-    assert.equal(response.status, 200);
-    const html = await response.text();
-    const visible = html
-      .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "")
-      .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, "")
-      .replace(/<[^>]+>/g, "");
+const fetchPage = (path) =>
+  server.fetch(new Request("http://localhost" + path), { waitUntil() {} });
+const visible = (html) =>
+  html
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, "")
+    .replace(/<[^>]+>/g, "");
+const staticFile = (url) => resolve(".vercel/output/static", "." + url);
+
+test("las rutas principales están disponibles en la compilación", async () => {
+  const routes = [
+    ["/", /De tus ideas a/],
+    ["/marketplace", /28 publicaciones/],
+    ["/marketplace?tipo=digital", /9 publicaciones/],
+    ["/producto/reductor-planetario", /Reductor planetario didáctico/],
+    ["/fabricantes", /Encuentra un fabricante/],
+    ["/fabricante/forma", /Forma3D/],
+    ["/solicitar-fabricacion", /Información del proyecto/],
+    ["/servicios-diseno", /Diseño y asesoría/],
+    ["/calculadora", /Distribución del costo/],
+    ["/vender", /Elige tu cuenta comercial/],
+    ["/publicar", /Nueva publicación/],
+    ["/carrito", /Tu carrito/],
+    ["/checkout", /Confirma tu compra/],
+    ["/favoritos", /Tus favoritos/],
+    ["/cuenta?seccion=biblioteca", /Carcasa para nodo IoT/],
+    ["/notificaciones", /Preferencias/],
+    ["/admin", /Administración/],
+    ["/como-funciona", /Cómo funciona ProtoLab/],
+    ["/materiales", /Materiales de fabricación/],
+    ["/faq", /Centro de ayuda/],
+    ["/contacto", /Contacto/],
+    ["/terminos", /Licencias de diseños/],
+    ["/privacidad", /Datos guardados en este navegador/],
+  ];
+  for (const [route, text] of routes) {
+    const response = await fetchPage(route);
+    assert.equal(response.status, 200, route);
+    const html = visible(await response.text());
+    assert.match(html.replace(/\s+/g, " "), text, route);
     assert.doesNotMatch(
-      visible,
-      /recargo|margen|factor de 1\.75|costo del material consumido|ajustar electricidad/i,
+      html,
+      /Modo demo|Datos simulados|Mock data|Vista demostrativa|Cotización automática/i,
       route,
     );
-    if (route === "/disenos") {
-      assert.match(visible, /Vista demostrativa/);
-      assert.match(visible, /L\s*100/);
-      assert.match(visible, /L\s*250/);
-      assert.match(visible, /L\s*500/);
-      assert.doesNotMatch(visible, /Cargando publicaciones|Publicación revisada/);
-    } else assert.doesNotMatch(visible, /L\s+[\d,]+/, route);
-    if (route === "/cotizar") {
-      assert.match(visible, /Cotización a tu medida/);
-      assert.match(visible, /Puedes continuar sin saber el peso/);
-    }
   }
 });
 
-test("las muestras y sus imágenes se entregan en el HTML inicial sin esperar al catálogo remoto", async () => {
-  const response = await server.fetch(new Request("http://localhost/disenos"), { waitUntil() {} });
-  assert.equal(response.status, 200);
-  const html = await response.text();
-  for (const title of [
-    "Soporte para sensor",
-    "Carcasa para electrónica",
-    "Conjunto de engranajes",
+test("los enlaces históricos redirigen y las rutas de API quedan fuera del prototipo", async () => {
+  for (const [from, to] of [
+    ["/cotizar", "/solicitar-fabricacion"],
+    ["/disenos", "/marketplace"],
+    ["/diseno/demo-carcasa-electronica", "/producto/carcasa-iot"],
+    ["/panel", "/cuenta"],
+    ["/seguimiento", "/cuenta"],
+    ["/asesoria", "/servicios-diseno"],
   ]) {
-    assert.ok(html.includes(`alt="${title}"`), `Muestra ausente del HTML: ${title}`);
+    const response = await fetchPage(from);
+    assert.ok(response.status >= 300 && response.status < 400, from);
+    assert.equal(new URL(response.headers.get("location"), "http://localhost").pathname, to, from);
   }
-  assert.ok(html.includes("No se procesan compras ni descargas"));
-  const images = [...html.matchAll(/<img[^>]*src="(\/assets\/[^\"]+\.jpg)"/g)];
-  assert.ok(images.length >= 3, "El servidor debe entregar las imágenes de muestra");
-  for (const [, asset] of images)
-    assert.ok(
-      existsSync(resolve(".vercel/output/static", "." + asset)),
-      `Imagen ausente del build: ${asset}`,
-    );
+  for (const route of [
+    "/producto/no-existe",
+    "/fabricante/no-existe",
+    "/api/session",
+    "/api/designs",
+  ]) {
+    assert.equal((await fetchPage(route)).status, 404, route);
+  }
 });
 
-test("el detalle y la propuesta de venta se pueden presentar sin Supabase ni cuenta", async () => {
-  for (const path of [
-    "/diseno/demo-soporte-sensor",
-    "/diseno/demo-carcasa-electronica",
-    "/diseno/demo-conjunto-engranajes",
-  ]) {
-    const response = await server.fetch(new Request("http://localhost" + path), { waitUntil() {} });
-    assert.equal(response.status, 200);
-    const html = await response.text();
-    assert.match(html, /Diseño de demostración/);
-    assert.match(html, /Comprar diseño · demo/);
-    assert.match(html, /Cotizar pieza fabricada/);
-    assert.doesNotMatch(html, /Publicación revisada|Iniciar sesión para comprar/);
-  }
-  const response = await server.fetch(new Request("http://localhost/publicar"), { waitUntil() {} });
-  const html = await response.text();
-  assert.equal(response.status, 200);
-  assert.match(html, /Precio propuesto del archivo/);
-  assert.match(html, /Previsualizar envío · demo/);
+test("las galerías, descargas y fuentes están incluidas como recursos locales", async () => {
+  const urls = [
+    "/marketplace/hero.webp",
+    "/marketplace/fonts/inter-latin.woff2",
+    "/marketplace/fonts/space-grotesk-latin.woff2",
+    "/protolab-symbol.svg",
+    ...products.flatMap((entry) => [
+      ...entry.images.map((image) => image.src),
+      ...(entry.asset ? [entry.asset.src] : []),
+    ]),
+    ...sellers
+      .filter((entry) => entry.id !== "protolab")
+      .map((entry) => "/marketplace/logos/" + entry.id + ".webp"),
+    "/marketplace/workshops/taller-fdm.webp",
+    "/marketplace/workshops/taller-resina.webp",
+    "/marketplace/workshops/estudio-cad.webp",
+  ];
+  assert.equal(new Set(products.map((entry) => entry.images[0].src)).size, products.length);
+  for (const url of urls) assert.ok(existsSync(staticFile(url)), "Recurso ausente: " + url);
+  const response = await fetchPage("/");
+  assert.match(await response.text(), /https:\/\/linktr\.ee\/pprotolab"/);
 });
